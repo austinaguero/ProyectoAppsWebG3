@@ -4,11 +4,11 @@ Proyecto del curso **Desarrollo de Aplicaciones Web y Patrones (SC-403)**
 Universidad Fidélitas · Ingeniería en Sistemas de Computación · Tercer cuatrimestre, 2026
 Docente: MSc. Allam Mauricio Fernández Rivera
 
-> Estado: 🚧 En planificación (Avance 1: historias de usuario, prototipo y modelo preliminar)
+> Estado: En planificación (Avance 1: historias de usuario, prototipo y modelo preliminar)
 
 ---
 
-## 📌 Descripción
+## Descripción
 
 Aplicación web con base de datos relacional centralizada para **Memoriales del Valle**, empresa costarricense de servicios funerarios con dos sedes propias y convenios con seis cementerios de la GAM. La plataforma sustituye los registros físicos y las hojas de cálculo independientes con los que opera actualmente la organización.
 
@@ -19,11 +19,11 @@ Aplicación web con base de datos relacional centralizada para **Memoriales del 
 - **Seguridad débil:** no hay autenticación formal para proteger datos personales (Ley n.º 8968).
 - **Toma de decisiones lenta:** los reportes gerenciales se consolidan a mano.
 
-## 🎯 Objetivo general
+## Objetivo general
 
 Desarrollar una plataforma web con base de datos relacional centralizada que gestione de forma integrada los servicios funerarios, planes de previsión, financiamientos, inventario y disponibilidad de unidades de sepultura, garantizando la integridad y la seguridad de la información y facilitando la toma de decisiones gerenciales.
 
-## 👤 Usuarios del sistema
+## Usuarios del sistema
 
 | Rol | Responsabilidades principales |
 |-----|-------------------------------|
@@ -34,7 +34,7 @@ Desarrollar una plataforma web con base de datos relacional centralizada que ges
 
 Las familias que contratan servicios o planes son **beneficiarias indirectas** y no acceden al sistema.
 
-## ⚙️ Módulos (alcance)
+## Módulos (alcance)
 
 - [ ] Seguridad y administración (autenticación, usuarios, roles)
 - [ ] Clientes y contratos de planes de previsión
@@ -47,7 +47,7 @@ Las familias que contratan servicios o planes son **beneficiarias indirectas** y
 
 **Fuera de alcance:** portal para familias, integración con comprobantes electrónicos de Hacienda, pasarelas de pago, contabilidad/planillas/RR. HH. y apps móviles nativas.
 
-## 🗄️ Modelo de datos (preliminar)
+## Modelo de datos (preliminar)
 
 Modelo relacional en **3FN** elaborado en draw.io. Convenciones: prefijo `FIDE_`, sufijo `_TB`, columnas en mayúsculas y eliminación lógica mediante `FIDE_ESTADOS_TB`.
 
@@ -60,10 +60,10 @@ Modelo relacional en **3FN** elaborado en draw.io. Convenciones: prefijo `FIDE_`
 | Ventas y facturación | `FIDE_VENTAS_TB`, `FIDE_DETALLE_VENTA_TB`, `FIDE_FACTURACION_TB` |
 | Usuarios y acceso | `FIDE_ROLES_TB`, `FIDE_USUARIOS_TB`, `FIDE_ESTADOS_TB` |
 
-📎 Diagrama ER completo: [Google Drive](https://drive.google.com/file/d/1mI9dlWyvXNulpM9dzGw3hhXqacS1UK_8/view?usp=sharing)
-📎 Historias de usuario: [Apéndice A](https://docs.google.com/document/d/1IHDob6zCsJgsrWz-IcHNy-TcZDQAFLMJ/edit?usp=sharing&ouid=112324371036536014488&rtpof=true&sd=true)
+Diagrama ER completo: [Google Drive](https://drive.google.com/file/d/1mI9dlWyvXNulpM9dzGw3hhXqacS1UK_8/view?usp=sharing)
+Historias de usuario: [Apéndice A](https://docs.google.com/document/d/1IHDob6zCsJgsrWz-IcHNy-TcZDQAFLMJ/edit?usp=sharing&ouid=112324371036536014488&rtpof=true&sd=true)
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 | Capa | Tecnología |
 |------|-----------|
@@ -74,7 +74,7 @@ Modelo relacional en **3FN** elaborado en draw.io. Convenciones: prefijo `FIDE_`
 | Modelado de datos | draw.io |
 | Control de versiones | Git + GitHub |
 
-## 👥 Integrantes
+## Integrantes
 
 | Nombre | Usuario de GitHub |
 |--------|-------------------|
@@ -82,7 +82,7 @@ Modelo relacional en **3FN** elaborado en draw.io. Convenciones: prefijo `FIDE_`
 | Daniela Muñoz Valverde | [@usuario] |
 | Austin Agüero Montero | [@usuario] |
 
-## 📂 Estructura del repositorio (preliminar)
+## Estructura del repositorio (preliminar)
 
 ```
 /
@@ -94,7 +94,7 @@ Modelo relacional en **3FN** elaborado en draw.io. Convenciones: prefijo `FIDE_`
 
 ---
 
-## 🌿 Acuerdo de trabajo por ramas
+## Acuerdo de trabajo por ramas
 
 | Rama | Propósito |
 |------|-----------|
@@ -134,8 +134,8 @@ Ejemplo: `feat: agregar reserva de unidades de sepultura`
 
 ---
 
-## 📅 Avances del curso
+## Avances del curso
 
 | Avance | Semana | Contenido | Estado |
 |--------|--------|-----------|--------|
-| Avance 1 | 5 | Planteamiento, historias de usuario, prototipo, modelo preliminar, repositorio | 🚧 En progreso |
+| Avance 1 | 5 | Planteamiento, historias de usuario, prototipo, modelo preliminar, repositorio | En progreso |
