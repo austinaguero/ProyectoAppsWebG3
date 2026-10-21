@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Memoriales del Valle - Gestión de Fallecidos</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Kapakana&family=Kavivanar&display=swap" rel="stylesheet">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <style>
+            :root {
+                --color-primary: #647061;
+                --color-gold: #9D7C34;
+                --color-sage: #A6C7BA;
+                --color-dusty: #9DB5AC;
+                --color-beige: #C3BAA6;
+                --color-moss: #859381;
+                --color-text: #666666;
+            }
+
+            body {
+                font-family: 'Kavivanar', cursive, sans-serif;
+                background-color: #f7f9f8;
+                color: var(--color-text);
+            }
+
+            h1, h2, h3, h4, .brand-font {
+                font-family: 'Kapakana', cursive, serif;
+            }
+
+            .sidebar {
+                min-height: 100vh;
+                background-color: var(--color-primary);
+                color: #ffffff;
+            }
+
+            .sidebar .nav-link {
+                color: var(--color-sage);
+                font-size: 1.05rem;
+                margin-bottom: 0.4rem;
+                padding: 0.7rem 1rem;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+
+            .sidebar .nav-link:hover, .sidebar .nav-link.active {
+                color: #ffffff;
+                background-color: var(--color-moss);
+            }
+
+            .card-memorial {
+                border: 1px solid var(--color-beige);
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(100, 112, 97, 0.08);
+                background-color: #ffffff;
+            }
+
+            .btn-gold {
+                background-color: var(--color-gold);
+                color: #ffffff;
+                font-weight: 600;
+                border: none;
+            }
+
+            .btn-gold:hover {
+                background-color: #82662a;
+                color: #ffffff;
+            }
+
+            .btn-moss {
+                background-color: var(--color-moss);
+                color: #ffffff;
+                border: none;
+            }
+
+            .btn-moss:hover {
+                background-color: #697566;
+                color: #ffffff;
+            }
+
+            .table-memorial thead {
+                background-color: var(--color-dusty);
+                color: #2c3e50;
+                font-weight: 600;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+
+                <nav class="col-md-3 col-lg-2 sidebar p-3 d-flex flex-column">
+                    <div class="pb-3 mb-3 border-bottom border-light border-opacity-25 px-2 text-center">
+                        <h3 class="brand-font mb-0 text-white fs-2">Memoriales</h3>
+                        <small class="text-white-50">del Valle</small>
+                    </div>
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-users me-2"></i> Clientes</a></li>
+                        <li class="nav-item"><a href="/fallecido/listado" class="nav-link active"><i class="fas fa-cross me-2"></i> Fallecidos</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-map-marker-alt me-2"></i> Ubicaciones</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-file-invoice-dollar me-2"></i> Pagos</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-chart-bar me-2"></i> Reportes</a></li>
+                    </ul>
+                    <hr class="text-light opacity-25"/>
+                    <div class="px-2 small text-white-50 text-center">© 2026 Memoriales del Valle</div>
+                </nav>
+
+                <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="brand-font text-dark mb-0 fs-1">Fallecidos Dashboard</h2>
+                            <p class="text-muted small mb-0">Gestión de expedientes de fallecidos (HU-04) y servicios contratados (HU-05)</p>
+                        </div>
+                        <span class="badge px-3 py-2 rounded-pill" style="background-color: var(--color-moss);"><i class="fas fa-user-shield me-1"></i> Módulo Operativo</span>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card card-memorial p-3 border-start border-4" style="border-color: var(--color-gold) !important;">
+                                <div class="text-muted small fw-bold text-uppercase">Total Fallecidos Registrados</div>
+                                <div class="h2 fw-bold mb-0" style="color: var(--color-gold);" th:text="${totalFallecidos}">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card card-memorial p-3 border-start border-4" style="border-color: var(--color-primary) !important;">
+                                <div class="text-muted small fw-bold text-uppercase">Servicios Funerarios Asociados</div>
+                                <div class="h2 fw-bold mb-0" style="color: var(--color-primary);" th:text="${servicios.size()}">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-memorial p-3 mb-4">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" class="form-control border-start-0" placeholder="Buscar expedientes..."/>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end d-flex gap-2 justify-content-end">
+                                <button class="btn btn-gold rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalFallecido">
+                                    <i class="fas fa-plus me-1"></i> HU-04: Registrar Fallecido
+                                </button>
+                                <button class="btn btn-moss rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalServicio">
+                                    <i class="fas fa-concierge-bell me-1"></i> HU-05: Asociar Servicio
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-memorial mb-4">
+                        <div class="card-body">
+                            <h4 class="brand-font mb-3 text-dark fs-3"><i class="fas fa-list me-2" style="color: var(--color-gold);"></i>Registro de Fallecidos (HU-04)</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-memorial align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>Cédula Fallecido</th>
+                                            <th>Cliente Responsable</th>
+                                            <th>Fecha Fallecimiento</th>
+                                            <th>Lugar / Cementerio</th>
+                                            <th>Causa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="f : ${fallecidos}">
+                                            <td th:text="${f.cedulaFallecido}" class="fw-bold" style="color: var(--color-primary);"></td>
+                                            <td th:text="${f.cedulaCliente}"></td>
+                                            <td th:text="${f.fechaFallecimiento}"></td>
+                                            <td th:text="${f.lugarFallecimiento}"></td>
+                                            <td th:text="${f.causaFallecimiento}"></td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(fallecidos)}">
+                                            <td colspan="5" class="text-center text-muted py-3">No hay fallecidos registrados en el sistema.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-memorial">
+                        <div class="card-body">
+                            <h4 class="brand-font mb-3 text-dark fs-3"><i class="fas fa-concierge-bell me-2" style="color: var(--color-moss);"></i>Servicios Funerarios Asociados (HU-05)</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-memorial align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Servicio</th>
+                                            <th>Cédula Fallecido</th>
+                                            <th>Tipo Servicio</th>
+                                            <th>Descripción</th>
+                                            <th>Fecha Solicitud</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="s : ${servicios}">
+                                            <td th:text="${s.idServicio}" class="fw-bold"></td>
+                                            <td th:text="${s.cedulaFallecido}"></td>
+                                            <td th:text="${s.idTipoServicio}"></td>
+                                            <td th:text="${s.descripcion}"></td>
+                                            <td th:text="${s.fechaSolicitud}"></td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(servicios)}">
+                                            <td colspan="5" class="text-center text-muted py-3">No hay servicios funerarios asociados.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalFallecido" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content card-memorial">
+                    <div class="modal-header text-white" style="background-color: var(--color-primary);">
+                        <h5 class="modal-title brand-font fs-3">HU-04: Registrar Fallecido</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/fallecido/guardar}" method="POST">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cédula Fallecido</label>
+                                <input type="text" name="cedulaFallecido" class="form-control" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cédula Cliente Responsable</label>
+                                <input type="text" name="cedulaCliente" class="form-control" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lugar / Cementerio</label>
+                                <input type="text" name="lugarFallecimiento" class="form-control"/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Causa de Fallecimiento</label>
+                                <input type="text" name="causaFallecimiento" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-gold rounded-pill px-4">Guardar Registro</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalServicio" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content card-memorial">
+                    <div class="modal-header text-white" style="background-color: var(--color-moss);">
+                        <h5 class="modal-title brand-font fs-3">HU-05: Asociar Servicio Funerario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/fallecido/asociar-servicio}" method="POST">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cédula Fallecido</label>
+                                <input type="text" name="cedulaFallecido" class="form-control" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">ID Tipo de Servicio (Ej. 1 = Velación, 2 = Cremación)</label>
+                                <input type="number" name="idTipoServicio" class="form-control" required/>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-moss rounded-pill px-4">Asociar Servicio</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
