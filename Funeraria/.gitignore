@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### NetBeans (config local) ###
+nbactions.xml
+
+### Llave privada de Firebase (no subir) ###
+src/main/resources/firebase/

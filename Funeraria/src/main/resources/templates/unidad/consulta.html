@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{general/fragmentos :: head}"></head>
+    <body>
+        <div class="panel">
+            <aside th:replace="~{general/fragmentos :: menu('ubicaciones')}"></aside>
+            <main class="contenido">
+                <section th:replace="~{unidad/fragmentos :: filtros}"></section>
+                <section th:replace="~{unidad/fragmentos :: resultados}"></section>
+            </main>
+        </div>
+
+        <footer th:replace="~{general/fragmentos :: footer}"></footer>
+    </body>
+</html>

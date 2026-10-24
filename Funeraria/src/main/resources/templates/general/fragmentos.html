@@ -1,0 +1,163 @@
+<!-- Fragmento #1 que irá en el head de todas las páginas, así se incluye todo lo necesario de configuración-->
+<head th:fragment="head">
+    <title>[[#{aplicacion.titulo}]]</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/webjars/font-awesome/css/all.css}" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Quicksand:wght@400;500&display=swap" rel="stylesheet"/>
+    <link th:href="@{/css/estilos.css}" rel="stylesheet"/>
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/rutinas.js}"></script>
+</head>
+
+
+<!-- Fragmento #2  define el encabezado de las páginas: fondo de mármol con el nombre de la funeraria y el selector de idioma -->
+<header th:fragment="header" class="encabezado">
+    <div class="barra-superior"></div>
+    <div class="linea-superior"></div>
+    <ul class="navbar-nav idioma">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
+                [[#{plantilla.idioma}]]</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" th:href="@{/(lang=es)}">Español</a></li>
+                <li><a class="dropdown-item" th:href="@{/(lang=en)}">English</a></li>
+                <li><a class="dropdown-item" th:href="@{/(lang=fr)}">Française</a></li>
+                <li><a class="dropdown-item" th:href="@{/(lang=pt)}">Portugaise</a></li>
+            </ul>
+        </li>
+    </ul>
+    <h1 class="titulo">[[#{aplicacion.nombre}]]</h1>
+    <div class="linea-inferior"></div>
+</header>
+
+<!-- Fragmento #2.1 menú lateral de las pantallas internas (diseño "Menu dash board" del Figma) -->
+<aside th:fragment="menu(activo)" class="menu-lateral d-print-none">
+    <a th:href="@{/}" class="menu-titulo">[[#{aplicacion.titulo}]]</a>
+    <nav class="nav flex-column">
+        <a class="nav-link disabled" href="#"><i class="fa-solid fa-table-cells-large"></i> [[#{menu.dashboard}]]</a>
+        <a class="nav-link disabled" href="#"><i class="fa-solid fa-user"></i> [[#{menu.clientes}]]</a>
+        <a class="nav-link disabled" href="#"><i class="fa-regular fa-heart"></i> [[#{menu.fallecidos}]]</a>
+        <a th:href="@{/unidad/consulta}" class="nav-link"
+           th:classappend="${activo == 'ubicaciones'} ? 'activo'"><i class="fa-solid fa-location-dot"></i> [[#{menu.ubicaciones}]]</a>
+        <a class="nav-link disabled" href="#"><i class="fa-solid fa-money-bill"></i> [[#{menu.pagos}]]</a>
+        <a class="nav-link disabled" href="#"><i class="fa-solid fa-chart-line"></i> [[#{menu.reportes}]]</a>
+        <a class="nav-link disabled" href="#"><i class="fa-solid fa-file-invoice"></i> [[#{menu.ventas}]]</a>
+        <a th:href="@{/servicio/listado}" class="nav-link"
+           th:classappend="${activo == 'servicios'} ? 'activo'"><i class="fa-solid fa-hand-holding-heart"></i> [[#{menu.servicios}]]</a>
+        <a th:href="@{/sepelio/listado}" class="nav-link"
+           th:classappend="${activo == 'sepelios'} ? 'activo'"><i class="fa-solid fa-calendar-days"></i> [[#{menu.sepelios}]]</a>
+    </nav>
+    <ul class="navbar-nav mt-auto">
+        <li class="nav-item dropup">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
+                <i class="fa-solid fa-language"></i> [[#{plantilla.idioma}]]</a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" th:href="@{''(lang=es)}">Español</a></li>
+                <li><a class="dropdown-item" th:href="@{''(lang=en)}">English</a></li>
+                <li><a class="dropdown-item" th:href="@{''(lang=fr)}">Française</a></li>
+                <li><a class="dropdown-item" th:href="@{''(lang=pt)}">Portugaise</a></li>
+            </ul>
+        </li>
+    </ul>
+</aside>
+
+<!-- Fragmento #3  define el footer de las páginas, aparte de esto se podria incluir enlaces a redes socilaes y demás -->
+<footer th:fragment="footer" class="pie p-2 d-print-none">
+    <p class="text-center small mb-0">[[#{plantilla.derechos}]] &COPY;</p>
+</footer>
+
+<!-- Fragmentos #4 define una ventana tipo Toast para mostrar mensajes al usuario -->
+<section th:fragment="mostrarToast">
+    <div aria-live="polite" aria-atomic="true"
+         class="position-fixed top-50 start-50 translate-middle" style="z-index: 1080;">
+        <div th:if="${error}" class="toast show"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             data-bs-autohide="true">
+            <div class="toast-header text-white bg-danger">
+                <i class="fa-solid fa-bomb"></i> <strong class="me-auto"> [[#{error}]]</strong>
+            </div>
+            <div class="toast-body">
+                <p>[[${error}]]</p>
+                <div class="mt-2 pt-2 border-top text-center">
+                    <button type="button" class="btn btn-secondary btn-sm"
+                            data-bs-dismiss="toast">[[#{accion.cerrar}]]</button>
+                </div>
+            </div>
+        </div>
+        <div th:if="${todoOk}" class="toast show"
+             role="status"
+             aria-live="polite"
+             aria-atomic="true"
+             data-bs-autohide="true">
+            <div class="toast-header text-white bg-success">
+                <i class="fa-solid fa-square-check"></i> <strong class="me-auto"> [[#{atencion}]]</strong>
+            </div>
+            <div class="toast-body">
+                <p>[[${todoOk}]]</p>
+                <div class="mt-2 pt-2 border-top text-center">
+                    <button type="button" class="btn btn-secondary btn-sm"
+                            data-bs-dismiss="toast">[[#{accion.cerrar}]]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fragmentos #5 define una ventana tipo modal para confirmar antes de eliminar -->
+<section th:fragment="confirmarEliminar(accionEliminar, nombreId)">
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form th:action="${accionEliminar}" method="post">
+                    <input type="hidden" th:attr="name=${nombreId}" id="modalId"/>
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title" id="modalLabel"><i class="fa-solid fa-circle-radiation"></i> [[#{accion.confirmar}]]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>[[#{accion.confirmar.texto1}]]<span id="modalDescripcion"></span>?</p>
+                        <h6>[[#{accion.confirmar.texto2}]]</h6>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fragmentos #6 define una ventana tipo modal para confirmar antes de guardar cambios de un registro -->
+<section th:fragment="confirmarEdicion">
+    <div class="modal fade" id="confirmEdicionModal" tabindex="-1" aria-labelledby="edicionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="edicionLabel"><i class="fa-solid fa-pen-to-square"></i> [[#{accion.confirmarEdicion}]]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>[[#{accion.confirmarEdicion.texto}]]</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-funeraria" id="confirmEdicionBoton">
+                        <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardarCambios}]]
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

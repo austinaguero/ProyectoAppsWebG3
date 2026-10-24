@@ -1,0 +1,259 @@
+/* Paleta de colores tomada del Figma del proyecto (Frame 3) */
+:root {
+    --verde-agua: #a7c7ba;
+    --arena: #c2baa5;
+    --gris-verdoso: #9eb5ad;
+    --gris: #666666;
+    --salvia: #859481;
+    --dorado: #9e7c34;
+    --verde-oscuro: #656f64;
+    --fondo: #e5e5e5;
+    --marmol: #f4f4f4;
+}
+
+body {
+    background-color: var(--fondo);
+    font-family: 'Quicksand', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Encabezado con fondo tipo mármol */
+.encabezado {
+    position: relative;
+    min-height: 260px;
+    background-color: var(--marmol);
+    background-image:
+        linear-gradient(115deg, transparent 40%, rgba(0, 0, 0, 0.07) 41%, transparent 43%),
+        linear-gradient(160deg, transparent 55%, rgba(0, 0, 0, 0.05) 56%, transparent 58%),
+        linear-gradient(70deg, transparent 65%, rgba(0, 0, 0, 0.06) 66%, transparent 67%),
+        radial-gradient(ellipse at 30% 40%, #ffffff 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, #e9e9e9 0%, transparent 55%);
+    border-bottom: 12px solid #dcdcdc;
+    overflow: hidden;
+}
+
+/* Barra gris inclinada de la esquina superior izquierda */
+.encabezado .barra-superior {
+    position: absolute;
+    top: 40px;
+    left: 5%;
+    width: 45%;
+    height: 12px;
+    background-color: var(--gris);
+    transform: skewX(-30deg);
+}
+
+/* Línea fina bajo la barra superior */
+.encabezado .linea-superior {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 50%;
+    height: 2px;
+    background-color: var(--salvia);
+}
+
+/* Línea negra de la esquina inferior derecha */
+.encabezado .linea-inferior {
+    position: absolute;
+    bottom: 25px;
+    right: 0;
+    width: 50%;
+    height: 4px;
+    background-color: #191919;
+}
+
+.encabezado .titulo {
+    font-family: 'Pinyon Script', cursive;
+    color: var(--dorado);
+    font-size: clamp(2.2rem, 5vw, 4.2rem);
+    text-align: center;
+    padding: 95px 1rem 60px;
+    margin: 0;
+}
+
+/* Selector de idioma discreto sobre el mármol */
+.encabezado .idioma {
+    position: absolute;
+    top: 8px;
+    right: 1rem;
+    z-index: 2;
+}
+
+.encabezado .idioma .nav-link {
+    color: var(--gris);
+    font-size: 0.85rem;
+}
+
+/* Sección "Quiénes somos" y "Nuestra visión" */
+.informacion {
+    padding: 3rem 0 2rem;
+}
+
+.informacion h2 {
+    color: var(--arena);
+    font-size: 1.4rem;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.informacion p {
+    font-size: 0.95rem;
+    text-align: justify;
+    color: #1e1e1e;
+}
+
+/* Botón "Ingreso de Usuario" */
+.btn-ingreso {
+    display: inline-block;
+    min-width: 280px;
+    padding: 0.35rem 3rem;
+    background-color: var(--gris-verdoso);
+    color: #ffffff;
+    font-size: 1.15rem;
+    border: 6px solid #000000;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.btn-ingreso:hover {
+    background-color: var(--salvia);
+    color: #ffffff;
+}
+
+/* El pie queda siempre al final de la pantalla */
+.pie {
+    margin-top: auto;
+    background-color: var(--verde-oscuro);
+    color: #ffffff;
+}
+
+/* ===== Pantallas internas (diseño "Menu dash board" del Figma) ===== */
+.panel {
+    display: flex;
+    flex: 1;
+    background-color: #ffffff;
+}
+
+.menu-lateral {
+    display: flex;
+    flex-direction: column;
+    width: 220px;
+    flex-shrink: 0;
+    padding: 1.25rem 0.75rem;
+    background-color: var(--fondo);
+    border-right: 3px solid #191919;
+}
+
+.menu-lateral .menu-titulo {
+    font-family: 'Pinyon Script', cursive;
+    color: var(--dorado);
+    font-size: 1.6rem;
+    text-align: center;
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+}
+
+.menu-lateral .nav-link {
+    color: var(--gris);
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+}
+
+.menu-lateral .nav-link i {
+    width: 1.6rem;
+    font-size: 1.15rem;
+}
+
+.menu-lateral .nav-link.disabled {
+    color: var(--gris);
+    opacity: 0.6;
+}
+
+.menu-lateral .nav-link.activo,
+.menu-lateral .nav-link:hover:not(.disabled) {
+    background-color: var(--arena);
+    color: #1e1e1e;
+}
+
+.contenido {
+    flex: 1;
+    min-width: 0;
+    padding: 1.5rem 2rem;
+}
+
+.titulo-pagina {
+    border-bottom: 3px solid #191919;
+    padding-bottom: 0.25rem;
+}
+
+.titulo-pagina h1 {
+    font-family: 'Pinyon Script', cursive;
+    color: var(--gris);
+    font-size: 2.6rem;
+    margin: 0;
+}
+
+.btn-funeraria {
+    background-color: var(--verde-oscuro);
+    color: #ffffff;
+    border-radius: 8px;
+}
+
+.btn-funeraria:hover {
+    background-color: var(--salvia);
+    color: #ffffff;
+}
+
+.encabezado-modal {
+    background-color: var(--gris-verdoso);
+    color: #ffffff;
+}
+
+.tabla-funeraria thead th {
+    color: #1e1e1e;
+    border-bottom: 2px solid var(--arena);
+    font-weight: 500;
+}
+
+.badge.estado {
+    background-color: var(--verde-agua);
+    color: #1e1e1e;
+    font-weight: 500;
+}
+
+.tarjeta-total {
+    background-color: var(--salvia);
+    color: #ffffff;
+}
+
+/* En celular el menú pasa arriba del contenido */
+@media (max-width: 767px) {
+    .panel {
+        flex-direction: column;
+    }
+
+    .menu-lateral {
+        width: 100%;
+        border-right: none;
+        border-bottom: 3px solid #191919;
+    }
+
+    .contenido {
+        padding: 1rem;
+    }
+}
+
+/* HU-08: pestañas de filtros por cementerio y sector */
+.filtros-unidad .nav-link {
+    color: var(--gris);
+}
+
+.filtros-unidad .nav-link.active {
+    color: var(--verde-oscuro);
+    border-bottom-color: var(--dorado);
+    font-weight: 500;
+}

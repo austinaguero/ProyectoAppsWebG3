@@ -1,0 +1,280 @@
+<!-- fragmento 1 con los filtros por cementerio y sector (pestañas, igual que consultas/fragmentos de Tienda) -->
+<section th:fragment="filtros">
+    <div class="titulo-pagina">
+        <h1>[[#{unidad.titulo}]]</h1>
+    </div>
+    <div class="py-3">
+        <a th:href="@{/unidad/listado}" class="btn btn-funeraria">
+            <i class="fa-solid fa-pen-to-square"></i> [[#{unidad.administrar}]]
+        </a>
+    </div>
+
+    <h6 class="mt-1 mb-1 text-muted">[[#{unidad.cementerio}]]</h6>
+    <ul class="nav nav-underline filtros-unidad">
+        <li th:each="c : ${cementerios}" class="nav-item">
+            <a th:href="@{/unidad/consulta(idCementerio=${c.idCementerio})}"
+               th:classappend="${idCementerioActual != null and idCementerioActual.equals(c.idCementerio)} ? 'active'"
+               class="nav-link">
+                [[${c.nombreCementerio}]]
+            </a>
+        </li>
+    </ul>
+
+    <th:block th:if="${idCementerioActual != null}">
+        <h6 class="mt-3 mb-1 text-muted">[[#{unidad.sector}]]</h6>
+        <ul class="nav nav-underline filtros-unidad">
+            <li th:each="s : ${sectores}" class="nav-item">
+                <a th:href="@{/unidad/consulta(idCementerio=${idCementerioActual},sector=${s})}"
+                   th:classappend="${s.equals(sectorActual)} ? 'active'"
+                   class="nav-link">
+                    [[${s}]]
+                    <span class="badge rounded-pill ms-1"
+                          th:classappend="${disponiblesPorSector.containsKey(s)} ? 'estado' : 'text-bg-secondary'">
+                        [[${disponiblesPorSector.containsKey(s) ? disponiblesPorSector.get(s) : 0}]]
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </th:block>
+</section>
+
+<!-- fragmento 2 con el listado de unidades disponibles o el aviso de que no hay espacio -->
+<section th:fragment="resultados" class="mt-4">
+    <!-- Todavía no se ha escogido cementerio o sector -->
+    <div class="alert alert-light border" th:if="${idCementerioActual == null}">
+        <i class="fa-solid fa-circle-info"></i> [[#{unidad.seleccioneCementerio}]]
+    </div>
+    <div class="alert alert-light border" th:if="${idCementerioActual != null and (sectorActual == null or sectorActual.isBlank())}">
+        <i class="fa-solid fa-circle-info"></i> [[#{unidad.seleccioneSector}]]
+    </div>
+
+    <!-- HU-08 criterio 1: listado exclusivo de unidades «Disponible» -->
+    <div class="row" th:if="${unidades != null and !unidades.empty}">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">[[#{unidad.disponibles}]] · [[${cementerioActual.nombreCementerio}]] · [[${sectorActual}]]</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>[[#{unidad.bloque}]]</th>
+                                    <th>[[#{unidad.numero}]]</th>
+                                    <th>[[#{unidad.tipo}]]</th>
+                                    <th>[[#{unidad.capacidad}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u : ${unidades}">
+                                    <td>[[${u.idUnidadSepultura}]]</td>
+                                    <td>[[${u.bloque}]]</td>
+                                    <td>[[${u.numero}]]</td>
+                                    <td>[[${u.tipoUnidad.nombreTipoUnidad}]]</td>
+                                    <td>[[${u.capacidad}]]</td>
+                                    <td><span class="badge estado">[[${u.estado.nombreEstado}]]</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{unidad.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-location-dot"></i> [[${totalUnidades}]]</h4>
+                </div></div>
+        </div>
+    </div>
+
+    <!-- HU-08 criterio 2: no hay espacio en el sector, se ofrecen otros sectores o cementerios -->
+    <div th:if="${unidades != null and unidades.empty}">
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            [[#{unidad.sinDisponibles(${sectorActual}, ${cementerioActual.nombreCementerio})}]]
+        </div>
+        <div class="card" th:if="${otrasOpciones != null and !otrasOpciones.empty}">
+            <div class="card-header"><h5 class="mb-0">[[#{unidad.otrasOpciones}]]</h5></div>
+            <div class="list-group list-group-flush">
+                <a th:each="o : ${otrasOpciones}"
+                   th:href="@{/unidad/consulta(idCementerio=${o.idCementerio()},sector=${o.sector()})}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <span>[[${o.nombreCementerio()}]] · [[${o.sector()}]]</span>
+                    <span class="badge rounded-pill estado">[[${o.cantidad()}]]</span>
+                </a>
+            </div>
+        </div>
+        <div class="alert alert-light border" th:if="${otrasOpciones == null or otrasOpciones.empty}">
+            [[#{unidad.sinOtras}]]
+        </div>
+    </div>
+</section>
+
+<!-- fragmento 3 con el título y el formulario unificado (modal) para agregar y modificar unidades -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{unidad.titulo}]]</h1>
+    </div>
+    <div class="py-3 d-flex gap-2 flex-wrap">
+        <button type="button"
+                class="btn btn-funeraria"
+                data-bs-toggle="modal"
+                data-bs-target="#unidadModal"
+                data-modo="agregar"
+                th:data-titulo="#{unidad.agregar}">
+            <i class="fa-solid fa-plus"></i>
+            [[#{unidad.agregar}]]
+        </button>
+        <a th:href="@{/unidad/consulta}" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-magnifying-glass"></i> [[#{unidad.consultarDisponibles}]]
+        </a>
+    </div>
+    <div class="modal fade" id="unidadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Si trae unidadId es una modificación y se pide confirmación antes de guardar -->
+                <form id="unidadForm"
+                      method="post"
+                      th:action="@{/unidad/guardar}"
+                      data-confirmar-edicion="unidadId">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="unidadModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="unidadId" name="idUnidadSepultura"/>
+                        <div class="mb-3">
+                            <label for="unidadCementerio">[[#{unidad.cementerio}]]</label>
+                            <select id="unidadCementerio" name="cementerio.idCementerio" class="form-select" required>
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="c : ${cementerios}" th:value="${c.idCementerio}">[[${c.nombreCementerio}]]</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="unidadSector">[[#{unidad.sector}]]</label>
+                                <input type="text" id="unidadSector" name="sector" maxlength="100" class="form-control" required/>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="unidadBloque">[[#{unidad.bloque}]]</label>
+                                <input type="text" id="unidadBloque" name="bloque" maxlength="100" class="form-control" required/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="unidadNumero">[[#{unidad.numero}]]</label>
+                                <input type="number" id="unidadNumero" name="numero" min="1" step="1" class="form-control" required/>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="unidadCapacidad">[[#{unidad.capacidad}]]</label>
+                                <input type="number" id="unidadCapacidad" name="capacidad" min="1" step="1" value="1" class="form-control" required/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="unidadTipo">[[#{unidad.tipo}]]</label>
+                                <select id="unidadTipo" name="tipoUnidad.idTipoUnidad" class="form-select" required>
+                                    <option value="">[[#{sepelio.seleccione}]]</option>
+                                    <option th:each="t : ${tiposUnidad}" th:value="${t.idTipoUnidad}">[[${t.nombreTipoUnidad}]]</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="unidadEstado">[[#{sepelio.estado}]]</label>
+                                <select id="unidadEstado" name="estado.idEstado" class="form-select" required>
+                                    <option th:each="e : ${estadosUnidad}" th:value="${e.idEstado}">[[${e.nombreEstado}]]</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- fragmento 4 con el listado de todas las unidades para el mantenimiento -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{unidad.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${unidades != null and !unidades.empty}">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>[[#{unidad.cementerio}]]</th>
+                                    <th>[[#{unidad.sector}]]</th>
+                                    <th>[[#{unidad.bloque}]]</th>
+                                    <th>[[#{unidad.numero}]]</th>
+                                    <th>[[#{unidad.tipo}]]</th>
+                                    <th>[[#{unidad.capacidad}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="u : ${unidades}">
+                                    <td>[[${u.idUnidadSepultura}]]</td>
+                                    <td>[[${u.cementerio.nombreCementerio}]]</td>
+                                    <td>[[${u.sector}]]</td>
+                                    <td>[[${u.bloque}]]</td>
+                                    <td>[[${u.numero}]]</td>
+                                    <td>[[${u.tipoUnidad.nombreTipoUnidad}]]</td>
+                                    <td>[[${u.capacidad}]]</td>
+                                    <td><span class="badge"
+                                              th:classappend="${u.estado.nombreEstado == 'Disponible'} ? 'estado' : 'text-bg-secondary'">[[${u.estado.nombreEstado}]]</span></td>
+                                    <td class="text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#unidadModal"
+                                                data-modo="editar"
+                                                th:data-titulo="#{unidad.editar}"
+                                                th:data-id="${u.idUnidadSepultura}"
+                                                th:data-cementerio="${u.cementerio.idCementerio}"
+                                                th:data-sector="${u.sector}"
+                                                th:data-bloque="${u.bloque}"
+                                                th:data-numero="${u.numero}"
+                                                th:data-capacidad="${u.capacidad}"
+                                                th:data-tipo="${u.tipoUnidad.idTipoUnidad}"
+                                                th:data-estado="${u.estado.idEstado}">
+                                            <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                                th:data-bs-id="${u.idUnidadSepultura}"
+                                                th:data-bs-descripcion="${' ' + #messages.msg('unidad.la') + ' ' + u.ubicacion}">
+                                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center p-2" th:if="${unidades == null or unidades.empty}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{unidad.totalRegistradas}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-location-dot"></i> [[${totalUnidades}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>

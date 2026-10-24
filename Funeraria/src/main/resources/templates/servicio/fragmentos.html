@@ -1,0 +1,140 @@
+<!-- 1 Fragmento con el título y el formulario unificado (modal) para agregar y modificar un servicio funerario -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{servicio.titulo}]]</h1>
+    </div>
+    <div class="py-3">
+        <button type="button"
+                class="btn btn-funeraria"
+                data-bs-toggle="modal"
+                data-bs-target="#servicioModal"
+                data-modo="agregar"
+                th:data-titulo="#{servicio.agregar}">
+            <i class="fa-solid fa-plus"></i>
+            [[#{servicio.agregar}]]
+        </button>
+    </div>
+    <div class="modal fade" id="servicioModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Si trae servicioId es una modificación y se pide confirmación antes de guardar -->
+                <form id="servicioForm"
+                      method="post"
+                      th:action="@{/servicio/guardar}"
+                      data-confirmar-edicion="servicioId">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="servicioModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="servicioId" name="idServicio"/>
+                        <div class="mb-3">
+                            <label for="servicioFallecido">[[#{servicio.fallecido}]]</label>
+                            <select id="servicioFallecido" name="fallecido.cedulaFallecido" class="form-select" required>
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="f : ${fallecidos}" th:value="${f.cedulaFallecido}">
+                                    [[${f.persona.nombreCompleto}]] ([[${f.cedulaFallecido}]])
+                                </option>
+                            </select>
+                            <small class="text-muted" th:if="${fallecidos == null or fallecidos.empty}">[[#{servicio.sinFallecidos}]]</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="servicioTipo">[[#{servicio.tipo}]]</label>
+                            <select id="servicioTipo" name="tipoServicio.idTipoServicio" class="form-select" required>
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="t : ${tiposServicio}" th:value="${t.idTipoServicio}">
+                                    [[${t.nombreTipo}]]
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="servicioDescripcion">[[#{servicio.descripcion}]]</label>
+                            <input type="text" id="servicioDescripcion" name="descripcion" maxlength="200" class="form-control"/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="servicioFecha">[[#{servicio.fechaSolicitud}]]</label>
+                            <input type="date" id="servicioFecha" name="fechaSolicitud" class="form-control"
+                                   th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- fragmento 2 para el listado de servicios funerarios -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{servicio.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${servicios != null and !servicios.empty}">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>[[#{servicio.fallecido}]]</th>
+                                    <th>[[#{servicio.tipo}]]</th>
+                                    <th>[[#{servicio.descripcion}]]</th>
+                                    <th>[[#{servicio.fechaSolicitud}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${servicios}">
+                                    <td>[[${s.idServicio}]]</td>
+                                    <td>[[${s.fallecido.persona.nombreCompleto}]]</td>
+                                    <td>[[${s.tipoServicio.nombreTipo}]]</td>
+                                    <td>[[${s.descripcion}]]</td>
+                                    <td>[[${#temporals.format(s.fechaSolicitud, 'dd/MM/yyyy')}]]</td>
+                                    <td><span class="badge estado">[[${s.estado.nombreEstado}]]</span></td>
+                                    <td class="text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#servicioModal"
+                                                data-modo="editar"
+                                                th:data-titulo="#{servicio.editar}"
+                                                th:data-id="${s.idServicio}"
+                                                th:data-fallecido="${s.fallecido.cedulaFallecido}"
+                                                th:data-fallecido-nombre="${s.fallecido.persona.nombreCompleto + ' (' + s.fallecido.cedulaFallecido + ')'}"
+                                                th:data-tipo="${s.tipoServicio.idTipoServicio}"
+                                                th:data-descripcion="${s.descripcion}"
+                                                th:data-fecha="${#temporals.format(s.fechaSolicitud, 'yyyy-MM-dd')}">
+                                            <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                                th:data-bs-id="${s.idServicio}"
+                                                th:data-bs-descripcion="${' ' + s.idServicio + ' - ' + (s.descripcion != null ? s.descripcion : s.tipoServicio.nombreTipo)}">
+                                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center p-2" th:if="${servicios == null or servicios.empty}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{servicio.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-hand-holding-heart"></i> [[${totalServicios}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>

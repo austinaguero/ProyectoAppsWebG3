@@ -1,0 +1,22 @@
+<!-- Fragmento #1 muestra la información de la empresa en la pantalla principal -->
+<section th:fragment="informacion" class="informacion">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-md-6">
+                <h2>[[#{inicio.quienesSomos}]]</h2>
+                <p>[[#{inicio.quienesSomos.texto}]]</p>
+            </div>
+            <div class="col-md-6">
+                <h2>[[#{inicio.vision}]]</h2>
+                <p>[[#{inicio.vision.texto1}]]</p>
+                <p>[[#{inicio.vision.texto2}]]</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fragmento #2 botón de acceso para los usuarios -->
+<!-- Temporal: mientras no exista el login, lleva directo al listado de sepelios -->
+<section th:fragment="ingreso" class="text-center pb-4">
+    <a th:href="@{/sepelio/listado}" class="btn-ingreso">[[#{inicio.ingreso}]]</a>
+</section>

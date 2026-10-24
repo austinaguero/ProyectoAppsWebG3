@@ -1,0 +1,174 @@
+<!-- 1 Fragmento con el título y el formulario unificado (modal) para programar y modificar un sepelio -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{sepelio.titulo}]]</h1>
+    </div>
+    <div class="py-3">
+        <button type="button"
+                class="btn btn-funeraria"
+                data-bs-toggle="modal"
+                data-bs-target="#sepelioModal"
+                data-modo="agregar"
+                th:data-titulo="#{sepelio.programar}">
+            <i class="fa-solid fa-plus"></i>
+            [[#{sepelio.programar}]]
+        </button>
+    </div>
+    <div class="modal fade" id="sepelioModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Sin "required": la validación de campos obligatorios la hace el servidor (HU-06 criterio 2).
+                     Si trae sepelioId es una modificación y se pide confirmación antes de guardar -->
+                <form id="sepelioForm"
+                      method="post"
+                      th:action="@{/sepelio/guardar}"
+                      data-confirmar-edicion="sepelioId">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="sepelioModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="sepelioId" name="idSepelio"/>
+                        <!-- Al programar se escoge el servicio -->
+                        <div class="mb-3" id="sepelioGrupoServicio">
+                            <label for="sepelioServicio">[[#{sepelio.servicio}]]</label>
+                            <select id="sepelioServicio" name="servicio.idServicio" class="form-select">
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="s : ${servicios}" th:value="${s.idServicio}">
+                                    [[${s.idServicio}]] - [[${s.descripcion}]] ([[${s.fallecido.persona.nombreCompleto}]])
+                                </option>
+                            </select>
+                            <small class="text-muted" th:if="${servicios == null or servicios.empty}">[[#{sepelio.sinServicios}]]</small>
+                        </div>
+                        <!-- Al editar el servicio no se cambia -->
+                        <div class="mb-3 d-none" id="sepelioGrupoServicioTexto">
+                            <label for="sepelioServicioTexto">[[#{sepelio.servicio}]]</label>
+                            <input type="text" id="sepelioServicioTexto" class="form-control" readonly/>
+                            <input type="hidden" id="sepelioServicioFijo" name="servicio.idServicio" disabled/>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="sepelioFecha">[[#{sepelio.fecha}]]</label>
+                                <input type="date" id="sepelioFecha" name="fechaSepelio" class="form-control"/>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label for="sepelioHora">[[#{sepelio.hora}]]</label>
+                                <input type="time" id="sepelioHora" name="hora" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sepelioResponsable">[[#{sepelio.responsable}]]</label>
+                            <select id="sepelioResponsable" name="responsable.cedulaUsuario" class="form-select">
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="u : ${colaboradores}" th:value="${u.cedulaUsuario}">
+                                    [[${u.persona.nombreCompleto}]]
+                                </option>
+                            </select>
+                        </div>
+                        <!-- HU-09: espacio donde se sepultará; solo unidades «Disponible» -->
+                        <div class="mb-3">
+                            <label for="sepelioUnidad">[[#{sepelio.unidad}]]</label>
+                            <select id="sepelioUnidad" name="unidadSepultura.idUnidadSepultura" class="form-select">
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="u : ${unidadesDisponibles}" th:value="${u.idUnidadSepultura}">
+                                    [[${u.ubicacion}]] ([[${u.tipoUnidad.nombreTipoUnidad}]])
+                                </option>
+                            </select>
+                            <div class="alert alert-warning py-2 mt-2 mb-0" id="sepelioSinUnidades"
+                                 th:if="${unidadesDisponibles == null or unidadesDisponibles.empty}">
+                                <i class="fa-solid fa-triangle-exclamation"></i> [[#{sepelio.sinUnidades}]]
+                                <a th:href="@{/unidad/listado}">[[#{unidad.administrar}]]</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria" id="sepelioGuardar">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- fragmento 2 para el listado de sepelios programados -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{sepelio.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${sepelios != null and !sepelios.empty}">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>[[#{sepelio.fallecido}]]</th>
+                                    <th>[[#{sepelio.servicio}]]</th>
+                                    <th>[[#{sepelio.fecha}]]</th>
+                                    <th>[[#{sepelio.hora}]]</th>
+                                    <th>[[#{sepelio.responsable}]]</th>
+                                    <th>[[#{sepelio.unidad}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="s : ${sepelios}">
+                                    <td>[[${s.idSepelio}]]</td>
+                                    <td>[[${s.fallecido.persona.nombreCompleto}]]</td>
+                                    <td>[[${s.servicio.descripcion}]]</td>
+                                    <td>[[${#temporals.format(s.fechaSepelio, 'dd/MM/yyyy')}]]</td>
+                                    <td>[[${#temporals.format(s.horaSepelio, 'HH:mm')}]]</td>
+                                    <td>[[${s.responsable.persona.nombreCompleto}]]</td>
+                                    <td>
+                                        <span th:if="${s.unidadSepultura != null}">[[${s.unidadSepultura.ubicacion}]]
+                                            <span class="badge text-bg-secondary">[[${s.unidadSepultura.estado.nombreEstado}]]</span></span>
+                                        <span th:if="${s.unidadSepultura == null}" class="text-muted">[[#{sepelio.sinUnidad}]]</span>
+                                    </td>
+                                    <td><span class="badge estado">[[${s.estado.nombreEstado}]]</span></td>
+                                    <td class="text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#sepelioModal"
+                                                data-modo="editar"
+                                                th:data-titulo="#{sepelio.editar}"
+                                                th:data-id="${s.idSepelio}"
+                                                th:data-servicio="${s.servicio.idServicio}"
+                                                th:data-servicio-texto="${s.servicio.idServicio + ' - ' + s.servicio.descripcion + ' (' + s.fallecido.persona.nombreCompleto + ')'}"
+                                                th:data-fecha="${#temporals.format(s.fechaSepelio, 'yyyy-MM-dd')}"
+                                                th:data-hora="${#temporals.format(s.horaSepelio, 'HH:mm')}"
+                                                th:data-responsable="${s.responsable.cedulaUsuario}"
+                                                th:data-unidad="${s.unidadSepultura != null ? s.unidadSepultura.idUnidadSepultura : ''}"
+                                                th:data-unidad-texto="${s.unidadSepultura != null ? s.unidadSepultura.ubicacion + ' (' + s.unidadSepultura.tipoUnidad.nombreTipoUnidad + ')' : ''}">
+                                            <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                                th:data-bs-id="${s.idSepelio}"
+                                                th:data-bs-descripcion="${' ' + #messages.msg('sepelio.de') + ' ' + s.fallecido.persona.nombreCompleto}">
+                                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center p-2" th:if="${sepelios == null or sepelios.empty}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{sepelio.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-calendar-check"></i> [[${totalSepelios}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>

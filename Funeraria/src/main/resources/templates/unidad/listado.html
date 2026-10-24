@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{general/fragmentos :: head}"></head>
+    <body>
+        <div class="panel">
+            <aside th:replace="~{general/fragmentos :: menu('ubicaciones')}"></aside>
+            <main class="contenido">
+                <section th:replace="~{unidad/fragmentos :: formulario}"></section>
+                <section th:replace="~{unidad/fragmentos :: listado}"></section>
+            </main>
+        </div>
+
+        <section th:replace="~{general/fragmentos :: confirmarEliminar(@{/unidad/eliminar},'idUnidadSepultura')}"></section>
+        <section th:replace="~{general/fragmentos :: confirmarEdicion}"></section>
+        <section th:replace="~{general/fragmentos :: mostrarToast}"></section>
+        <footer th:replace="~{general/fragmentos :: footer}"></footer>
+
+        <script th:src="@{/js/modulos/unidad.js}"></script>
+    </body>
+</html>

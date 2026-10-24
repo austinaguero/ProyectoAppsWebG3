@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{general/fragmentos :: head}"></head>
+    <body>
+        <div class="panel">
+            <aside th:replace="~{general/fragmentos :: menu('servicios')}"></aside>
+            <main class="contenido">
+                <section th:replace="~{servicio/fragmentos :: formulario}"></section>
+                <section th:replace="~{servicio/fragmentos :: listado}"></section>
+            </main>
+        </div>
+
+        <section th:replace="~{general/fragmentos :: confirmarEliminar(@{/servicio/eliminar},'idServicio')}"></section>
+        <section th:replace="~{general/fragmentos :: confirmarEdicion}"></section>
+        <section th:replace="~{general/fragmentos :: mostrarToast}"></section>
+        <footer th:replace="~{general/fragmentos :: footer}"></footer>
+
+        <script th:src="@{/js/modulos/servicio.js}"></script>
+    </body>
+</html>
