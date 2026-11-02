@@ -1,0 +1,151 @@
+<!-- 1 Fragmento con el título y el formulario (modal) para registrar y editar un cliente (HU-01 y HU-03) -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{cliente.titulo}]]</h1>
+    </div>
+    <div class="py-3">
+        <button type="button"
+                class="btn btn-funeraria"
+                data-bs-toggle="modal"
+                data-bs-target="#clienteModal"
+                data-modo="agregar"
+                th:data-titulo="#{cliente.agregar}">
+            <i class="fa-solid fa-plus"></i>
+            [[#{cliente.agregar}]]
+        </button>
+    </div>
+    <div class="modal fade" id="clienteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Si clienteEditar trae valor es una modificación y se pide confirmación antes de guardar -->
+                <form id="clienteForm"
+                      method="post"
+                      th:action="@{/cliente/guardar}"
+                      data-confirmar-edicion="clienteEditar">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="clienteModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="clienteEditar" name="editar"/>
+                        <div class="mb-3">
+                            <label for="clienteCedula">[[#{cliente.cedula}]]</label>
+                            <input type="text" id="clienteCedula" name="cedulaCliente" maxlength="20"
+                                   class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clienteNombre">[[#{cliente.nombre}]]</label>
+                            <input type="text" id="clienteNombre" name="persona.nombre" maxlength="100"
+                                   class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clienteApellido1">[[#{cliente.apellido1}]]</label>
+                            <input type="text" id="clienteApellido1" name="persona.apellido1" maxlength="100"
+                                   class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clienteApellido2">[[#{cliente.apellido2}]]</label>
+                            <input type="text" id="clienteApellido2" name="persona.apellido2" maxlength="100"
+                                   class="form-control"/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="clienteReferencia">[[#{cliente.referencia}]]</label>
+                            <input type="text" id="clienteReferencia" name="referenciaFamiliar" maxlength="100"
+                                   class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2 Fragmento con el buscador por cédula o nombre (HU-02) -->
+<section th:fragment="busqueda">
+    <form method="get" th:action="@{/cliente/listado}" class="row g-2 mb-3">
+        <div class="col-md-6">
+            <input type="text" name="buscar" class="form-control"
+                   th:value="${buscar}" th:placeholder="#{cliente.buscarTexto}"/>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-funeraria">
+                <i class="fa-solid fa-magnifying-glass"></i> [[#{cliente.buscar}]]
+            </button>
+            <a th:href="@{/cliente/listado}" class="btn btn-secondary">
+                <i class="fa-solid fa-eraser"></i> [[#{cliente.limpiar}]]
+            </a>
+        </div>
+    </form>
+</section>
+
+<!-- 3 Fragmento con el listado de clientes -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{cliente.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${clientes != null and !clientes.empty}">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>[[#{cliente.cedula}]]</th>
+                                    <th>[[#{cliente.nombreCompleto}]]</th>
+                                    <th>[[#{cliente.referencia}]]</th>
+                                    <th>[[#{cliente.fechaRegistro}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="c : ${clientes}">
+                                    <td>[[${c.cedulaCliente}]]</td>
+                                    <td>[[${c.persona.nombreCompleto}]]</td>
+                                    <td>[[${c.referenciaFamiliar}]]</td>
+                                    <td>[[${#temporals.format(c.fechaRegistro, 'dd/MM/yyyy')}]]</td>
+                                    <td><span class="badge estado">[[${c.estado.nombreEstado}]]</span></td>
+                                    <td class="text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#clienteModal"
+                                                data-modo="editar"
+                                                th:data-titulo="#{cliente.editar}"
+                                                th:data-cedula="${c.cedulaCliente}"
+                                                th:data-nombre="${c.persona.nombre}"
+                                                th:data-apellido1="${c.persona.apellido1}"
+                                                th:data-apellido2="${c.persona.apellido2}"
+                                                th:data-referencia="${c.referenciaFamiliar}">
+                                            <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- HU-02 criterio 2: la búsqueda no encontró resultados -->
+                    <div class="text-center p-2"
+                         th:if="${(clientes == null or clientes.empty) and buscar != null and !buscar.isBlank()}">
+                        <span>[[#{cliente.sinResultados}]]</span></div>
+                    <div class="text-center p-2"
+                         th:if="${(clientes == null or clientes.empty) and (buscar == null or buscar.isBlank())}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{cliente.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-user"></i> [[${totalClientes}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>
