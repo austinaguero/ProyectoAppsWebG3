@@ -1,19 +1,19 @@
 package com.Funeraria.Funeraria_G3.controller;
 
 import com.Funeraria.Funeraria_G3.domain.Sepelio;
-import com.Funeraria.Funeraria_G3.service.ConflictoHorarioException;
-import com.Funeraria.Funeraria_G3.service.ReglaNegocioException;
 import com.Funeraria.Funeraria_G3.service.SepelioService;
 import com.Funeraria.Funeraria_G3.service.UnidadSepulturaService;
 import com.Funeraria.Funeraria_G3.service.ServicioService;
 import com.Funeraria.Funeraria_G3.service.UsuarioService;
 import jakarta.validation.Valid;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -47,40 +47,45 @@ public class SepelioController {
         return "sepelio/listado";
     }
 
-    // Programa un sepelio nuevo o modifica uno existente según venga o no el idSepelio
+    // Programa un sepelio nuevo o modifica uno existente según venga o no el idSepelio.
+    // La hora llega aparte, como en Tienda la imagen (imagenFile).
     @PostMapping("/guardar")
     public String guardar(@Valid Sepelio sepelio, BindingResult bindingResult,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime hora,
             RedirectAttributes redirectAttributes) {
         boolean nuevo = sepelio.getIdSepelio() == null;
+        // Desde el formulario llegan solo los ids de los selects
+        boolean faltaServicio = sepelio.getServicio() == null || sepelio.getServicio().getIdServicio() == null;
+        boolean faltaUnidad = sepelio.getUnidadSepultura() == null
+                || sepelio.getUnidadSepultura().getIdUnidadSepultura() == null;
         String titulo = "todoOk";
         String mensaje = nuevo ? "sepelio.programado" : "sepelio.actualizado";
         Object[] datos = null;
-        if (bindingResult.hasErrors()) {
-            titulo = "error";
-            if (bindingResult.getErrorCount() == 1 && bindingResult.hasFieldErrors("unidadSeleccionada")) {
-                mensaje = "sepelio.error07"; // Solo falta el espacio donde sepultar
-            } else {
-                mensaje = "sepelio.error01"; // Fecha, hora o responsable vacíos (HU-06 criterio 2)
-            }
+        if (bindingResult.hasErrors() || hora == null || faltaServicio) {
+            titulo = "error"; // Servicio, fecha, hora o responsable vacíos (HU-06 criterio 2)
+            mensaje = "sepelio.error01";
+        } else if (faltaUnidad) {
+            titulo = "error"; // Falta el espacio donde sepultar (HU-09)
+            mensaje = "sepelio.error07";
+        } else if (!sepelioService.getConflictoHorario(sepelio, hora).isEmpty()) {
+            titulo = "error"; // El responsable ya tiene otro sepelio a esa hora (HU-07 criterio 2)
+            mensaje = "sepelio.conflicto";
+            var existente = sepelioService.getConflictoHorario(sepelio, hora).get(0);
+            datos = new Object[]{
+                existente.getResponsable().getPersona().getNombreCompleto(),
+                existente.getFallecido().getPersona().getNombreCompleto(),
+                existente.getHoraSepelio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                existente.getHoraSepelio().format(DateTimeFormatter.ofPattern("HH:mm"))};
+        } else if (!sepelioService.isUnidadDisponible(sepelio)) {
+            titulo = "error"; // La unidad escogida ya no está «Disponible» (HU-09)
+            mensaje = "sepelio.error06";
         } else {
             try {
                 if (nuevo) {
-                    sepelioService.programar(sepelio);
+                    sepelioService.programar(sepelio, hora);
                 } else {
-                    sepelioService.actualizar(sepelio);
+                    sepelioService.actualizar(sepelio, hora);
                 }
-            } catch (ConflictoHorarioException e) {
-                titulo = "error"; // El responsable ya tiene otro sepelio a esa hora (HU-07 criterio 2)
-                mensaje = "sepelio.conflicto";
-                var existente = e.getSepelioExistente();
-                datos = new Object[]{
-                    existente.getResponsable().getPersona().getNombreCompleto(),
-                    existente.getFallecido().getPersona().getNombreCompleto(),
-                    existente.getHoraSepelio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                    existente.getHoraSepelio().format(DateTimeFormatter.ofPattern("HH:mm"))};
-            } catch (ReglaNegocioException e) {
-                titulo = "error"; // La unidad ya no está disponible (HU-09)
-                mensaje = e.getClave();
             } catch (IllegalArgumentException e) {
                 titulo = "error"; // El sepelio, el servicio o el responsable no existen
                 mensaje = "sepelio.error02";
@@ -93,8 +98,7 @@ public class SepelioController {
                 log.error("" + e);
             }
         }
-        redirectAttributes.addFlashAttribute(titulo,
-                messageSource.getMessage(mensaje, datos, LocaleContextHolder.getLocale()));
+        redirectAttributes.addFlashAttribute(titulo, messageSource.getMessage(mensaje, datos, Locale.getDefault()));
         return "redirect:/sepelio/listado";
     }
 
@@ -112,8 +116,7 @@ public class SepelioController {
             detalle = "sepelio.error04";
             log.error("" + e);
         }
-        redirectAttributes.addFlashAttribute(titulo,
-                messageSource.getMessage(detalle, null, LocaleContextHolder.getLocale()));
+        redirectAttributes.addFlashAttribute(titulo, messageSource.getMessage(detalle, null, Locale.getDefault()));
         return "redirect:/sepelio/listado";
     }
 }

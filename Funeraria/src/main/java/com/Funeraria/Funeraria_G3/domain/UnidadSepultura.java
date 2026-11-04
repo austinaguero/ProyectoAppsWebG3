@@ -1,7 +1,6 @@
 package com.Funeraria.Funeraria_G3.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +12,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @Entity
+// La base no permite repetir la misma ubicación (UNIQUE fide_unidades_sepultura_ubicacion_uq)
 @Table(name = "fide_unidades_sepultura_tb")
 public class UnidadSepultura implements Serializable {
 
@@ -60,21 +60,5 @@ public class UnidadSepultura implements Serializable {
     public String getUbicacion() {
         return (cementerio != null ? cementerio.getNombreCementerio() : "")
                 + " · " + sector + " · " + bloque + " · #" + numero;
-    }
-
-    // Desde el formulario llegan solo los ids de los selects, por eso se valida que vengan
-    @AssertTrue
-    public boolean isCementerioSeleccionado() {
-        return cementerio != null && cementerio.getIdCementerio() != null;
-    }
-
-    @AssertTrue
-    public boolean isTipoUnidadSeleccionado() {
-        return tipoUnidad != null && tipoUnidad.getIdTipoUnidad() != null;
-    }
-
-    @AssertTrue
-    public boolean isEstadoSeleccionado() {
-        return estado != null && estado.getIdEstado() != null;
     }
 }

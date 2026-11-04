@@ -8,6 +8,7 @@ import com.Funeraria.Funeraria_G3.repository.EstadoRepository;
 import com.Funeraria.Funeraria_G3.repository.PersonaRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,27 +31,22 @@ public class ClienteService {
         return clienteRepository.findAll();
     }
 
-    // HU-02: consulta por cédula, nombre o primer apellido
+    // HU-02: consulta SQL por cédula o nombre completo
     @Transactional(readOnly = true)
-    public List<Cliente> buscar(String texto) {
-        if (texto == null || texto.isBlank()) {
-            return clienteRepository.findAll();
-        }
-        String t = texto.trim();
-        return clienteRepository
-                .findByCedulaClienteContainingOrPersonaNombreContainingIgnoreCaseOrPersonaApellido1ContainingIgnoreCase(t, t, t);
+    public List<Cliente> consultaSQL(String texto) {
+        return clienteRepository.consultaSQL(texto.trim());
     }
 
-    // HU-01: registrar un cliente nuevo
+    @Transactional(readOnly = true)
+    public Optional<Cliente> getCliente(String cedulaCliente) {
+        return clienteRepository.findById(cedulaCliente.trim());
+    }
+
+    // HU-01: registrar un cliente nuevo (los datos obligatorios ya vienen validados con @Valid
+    // y el controlador ya validó que la cédula no esté registrada como cliente)
     @Transactional
     public void registrar(Cliente cliente) {
-        validarDatos(cliente);
         String cedula = cliente.getCedulaCliente().trim();
-
-        // Regla de negocio: la cédula no puede estar registrada como cliente
-        if (clienteRepository.existsById(cedula)) {
-            throw new ReglaNegocioException("cliente.error01");
-        }
         Estado activo = getEstadoActivo();
 
         // 1. Se guardan (o actualizan) los datos personales en la DB
@@ -73,7 +69,6 @@ public class ClienteService {
     // HU-03: actualizar la información de un cliente existente
     @Transactional
     public void actualizar(Cliente cliente) {
-        validarDatos(cliente);
         var actual = clienteRepository.findById(cliente.getCedulaCliente())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "El cliente con cédula " + cliente.getCedulaCliente() + " no existe."));
@@ -87,16 +82,6 @@ public class ClienteService {
 
         actual.setReferenciaFamiliar(cliente.getReferenciaFamiliar());
         clienteRepository.save(actual);
-    }
-
-    // Cédula, nombre y primer apellido son obligatorios
-    private void validarDatos(Cliente cliente) {
-        if (cliente.getCedulaCliente() == null || cliente.getCedulaCliente().isBlank()
-                || cliente.getPersona() == null
-                || cliente.getPersona().getNombre() == null || cliente.getPersona().getNombre().isBlank()
-                || cliente.getPersona().getApellido1() == null || cliente.getPersona().getApellido1().isBlank()) {
-            throw new ReglaNegocioException("cliente.error02");
-        }
     }
 
     private Estado getEstadoActivo() {

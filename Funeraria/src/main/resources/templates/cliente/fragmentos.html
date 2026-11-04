@@ -70,9 +70,10 @@
 
 <!-- 2 Fragmento con el buscador por cédula o nombre (HU-02) -->
 <section th:fragment="busqueda">
-    <form method="get" th:action="@{/cliente/listado}" class="row g-2 mb-3">
+    <!-- HU-02: igual que la consulta SQL de Tienda (POST a /consultaSQL) -->
+    <form method="post" th:action="@{/cliente/consultaSQL}" class="row g-2 mb-3">
         <div class="col-md-6">
-            <input type="text" name="buscar" class="form-control"
+            <input type="text" name="buscar" class="form-control" required
                    th:value="${buscar}" th:placeholder="#{cliente.buscarTexto}"/>
         </div>
         <div class="col-auto">

@@ -24,7 +24,7 @@ public class Usuario implements Serializable {
     private String usuario;
 
     // La cédula del usuario es la misma de la persona
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "cedula_usuario", insertable = false, updatable = false)
     private Persona persona;
 

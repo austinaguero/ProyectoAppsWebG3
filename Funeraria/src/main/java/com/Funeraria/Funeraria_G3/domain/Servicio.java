@@ -1,7 +1,6 @@
 package com.Funeraria.Funeraria_G3.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -41,16 +40,4 @@ public class Servicio implements Serializable {
     @ManyToOne
     @JoinColumn(name = "id_estado")
     private Estado estado;
-
-    // Desde el formulario llegan solo los ids de los selects, por eso se valida que vengan
-    @AssertTrue
-    public boolean isFallecidoSeleccionado() {
-        return fallecido != null && fallecido.getCedulaFallecido() != null
-                && !fallecido.getCedulaFallecido().isBlank();
-    }
-
-    @AssertTrue
-    public boolean isTipoServicioSeleccionado() {
-        return tipoServicio != null && tipoServicio.getIdTipoServicio() != null;
-    }
 }

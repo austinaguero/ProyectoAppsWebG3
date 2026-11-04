@@ -28,9 +28,10 @@
                    th:classappend="${s.equals(sectorActual)} ? 'active'"
                    class="nav-link">
                     [[${s}]]
+                    <!-- Marca si el sector tiene o no unidades disponibles -->
                     <span class="badge rounded-pill ms-1"
-                          th:classappend="${disponiblesPorSector.containsKey(s)} ? 'estado' : 'text-bg-secondary'">
-                        [[${disponiblesPorSector.containsKey(s) ? disponiblesPorSector.get(s) : 0}]]
+                          th:classappend="${sectoresDisponibles.contains(s)} ? 'estado' : 'text-bg-secondary'">
+                        <i class="fa-solid" th:classappend="${sectoresDisponibles.contains(s)} ? 'fa-check' : 'fa-xmark'"></i>
                     </span>
                 </a>
             </li>
@@ -99,12 +100,13 @@
         </div>
         <div class="card" th:if="${otrasOpciones != null and !otrasOpciones.empty}">
             <div class="card-header"><h5 class="mb-0">[[#{unidad.otrasOpciones}]]</h5></div>
+            <!-- otrasOpciones: una unidad disponible por cada cementerio y sector con espacio -->
             <div class="list-group list-group-flush">
-                <a th:each="o : ${otrasOpciones}"
-                   th:href="@{/unidad/consulta(idCementerio=${o.idCementerio()},sector=${o.sector()})}"
+                <a th:each="u : ${otrasOpciones}"
+                   th:href="@{/unidad/consulta(idCementerio=${u.cementerio.idCementerio},sector=${u.sector})}"
                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <span>[[${o.nombreCementerio()}]] · [[${o.sector()}]]</span>
-                    <span class="badge rounded-pill estado">[[${o.cantidad()}]]</span>
+                    <span>[[${u.cementerio.nombreCementerio}]] · [[${u.sector}]]</span>
+                    <i class="fa-solid fa-chevron-right text-muted"></i>
                 </a>
             </div>
         </div>

@@ -1,0 +1,214 @@
+<!-- 1 Fragmento con el título y el formulario unificado (modal) para registrar y modificar un fallecido (HU-04) -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{fallecido.titulo}]]</h1>
+    </div>
+    <div class="py-3">
+        <button type="button"
+                class="btn btn-funeraria"
+                data-bs-toggle="modal"
+                data-bs-target="#fallecidoModal"
+                data-modo="agregar"
+                th:data-titulo="#{fallecido.registrar}">
+            <i class="fa-solid fa-plus"></i>
+            [[#{fallecido.registrar}]]
+        </button>
+    </div>
+    <div class="modal fade" id="fallecidoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Si "edicion" trae valor es una modificación y se pide confirmación antes de guardar -->
+                <form id="fallecidoForm"
+                      method="post"
+                      th:action="@{/fallecido/guardar}"
+                      data-confirmar-edicion="fallecidoEdicion">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="fallecidoModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="fallecidoEdicion" name="edicion"/>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoCedula">[[#{fallecido.cedula}]]</label>
+                                <input type="text" id="fallecidoCedula" name="cedulaFallecido" maxlength="20" class="form-control" required/>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label for="fallecidoCliente">[[#{fallecido.cliente}]]</label>
+                                <select id="fallecidoCliente" name="cliente.cedulaCliente" class="form-select" required>
+                                    <option value="">[[#{sepelio.seleccione}]]</option>
+                                    <option th:each="c : ${clientes}" th:value="${c.cedulaCliente}">
+                                        [[${c.persona.nombreCompleto}]] ([[${c.cedulaCliente}]])
+                                    </option>
+                                </select>
+                                <small class="text-muted" th:if="${clientes == null or clientes.empty}">[[#{fallecido.sinClientes}]]</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoNombre">[[#{fallecido.nombre}]]</label>
+                                <input type="text" id="fallecidoNombre" name="persona.nombre" maxlength="100" class="form-control" required/>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoApellido1">[[#{fallecido.apellido1}]]</label>
+                                <input type="text" id="fallecidoApellido1" name="persona.apellido1" maxlength="100" class="form-control" required/>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoApellido2">[[#{fallecido.apellido2}]]</label>
+                                <input type="text" id="fallecidoApellido2" name="persona.apellido2" maxlength="100" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fallecidoNacimiento">[[#{fallecido.fechaNacimiento}]]</label>
+                                <input type="date" id="fallecidoNacimiento" name="fechaNacimiento" class="form-control" required/>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="fallecidoFallecimiento">[[#{fallecido.fechaFallecimiento}]]</label>
+                                <input type="date" id="fallecidoFallecimiento" name="fechaFallecimiento" class="form-control" required/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fallecidoLugar">[[#{fallecido.lugar}]]</label>
+                                <input type="text" id="fallecidoLugar" name="lugarFallecimiento" maxlength="150" class="form-control"/>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="fallecidoCausa">[[#{fallecido.causa}]]</label>
+                                <input type="text" id="fallecidoCausa" name="causaFallecimiento" maxlength="150" class="form-control"/>
+                            </div>
+                        </div>
+                        <!-- Dirección de domicilio: el cantón depende de la provincia y el distrito del cantón -->
+                        <h6 class="mt-2 mb-2 text-muted">[[#{fallecido.domicilio}]]</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoProvincia">[[#{direccion.provincia}]]</label>
+                                <select id="fallecidoProvincia" name="idProvincia" class="form-select" required>
+                                    <option value="">[[#{sepelio.seleccione}]]</option>
+                                    <option th:each="p : ${provincias}" th:value="${p.idProvincia}">[[${p.nombreProvincia}]]</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoCanton">[[#{direccion.canton}]]</label>
+                                <select id="fallecidoCanton" name="idCanton" class="form-select" required>
+                                    <option value="">[[#{sepelio.seleccione}]]</option>
+                                    <option th:each="c : ${cantones}" th:value="${c.idCanton}"
+                                            th:data-provincia="${c.provincia.idProvincia}">[[${c.nombreCanton}]]</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="fallecidoDistrito">[[#{direccion.distrito}]]</label>
+                                <select id="fallecidoDistrito" name="idDistrito" class="form-select" required>
+                                    <option value="">[[#{sepelio.seleccione}]]</option>
+                                    <option th:each="d : ${distritos}" th:value="${d.idDistrito}"
+                                            th:data-canton="${d.canton.idCanton}">[[${d.nombreDistrito}]]</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fallecidoSennas">[[#{direccion.otrasSennas}]]</label>
+                            <input type="text" id="fallecidoSennas" name="otrasSennas" maxlength="200" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- fragmento 2 para el listado de fallecidos (columnas del Figma: nombre, fecha, cementerio y ubicación) -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{fallecido.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${fallecidos != null and !fallecidos.empty}">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>[[#{fallecido.cedula}]]</th>
+                                    <th>[[#{fallecido.nombreCompleto}]]</th>
+                                    <th>[[#{fallecido.fecha}]]</th>
+                                    <th>[[#{fallecido.cliente}]]</th>
+                                    <th>[[#{unidad.cementerio}]]</th>
+                                    <th>[[#{fallecido.ubicacion}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Sepelio y domicilio salen de las relaciones del fallecido (como productos en Categoria de Tienda) -->
+                                <tr th:each="f : ${fallecidos}"
+                                    th:with="sep=${f.sepelios != null and !f.sepelios.empty ? f.sepelios[0] : null},dir=${f.persona.direcciones != null and !f.persona.direcciones.empty ? f.persona.direcciones[0] : null}">
+                                    <td>[[${f.cedulaFallecido}]]</td>
+                                    <td>[[${f.persona.nombreCompleto}]]</td>
+                                    <td>[[${#temporals.format(f.fechaFallecimiento, 'dd/MM/yyyy')}]]</td>
+                                    <td>[[${f.cliente.persona.nombreCompleto}]]</td>
+                                    <!-- Cementerio y espacio de sepultura, si ya tiene un sepelio con unidad asignada -->
+                                    <td>
+                                        <th:block th:if="${sep != null and sep.unidadSepultura != null}">
+                                            [[${sep.unidadSepultura.cementerio.nombreCementerio}]]
+                                            <div class="small text-muted">[[${sep.unidadSepultura.sector}]] · [[${sep.unidadSepultura.bloque}]] · #[[${sep.unidadSepultura.numero}]]</div>
+                                        </th:block>
+                                        <span th:unless="${sep != null and sep.unidadSepultura != null}" class="text-muted">[[#{fallecido.enTramite}]]</span>
+                                    </td>
+                                    <!-- Ubicación: resumen del domicilio (distrito, cantón, provincia) -->
+                                    <td>
+                                        <span th:if="${dir != null}" th:title="${dir.otrasSennas}">
+                                            <i class="fa-solid fa-house text-muted"></i> [[${dir.resumen}]]</span>
+                                        <span th:if="${dir == null}" class="text-muted">[[#{fallecido.sinDomicilio}]]</span>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-sm btn-warning"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#fallecidoModal"
+                                                data-modo="editar"
+                                                th:data-titulo="#{fallecido.editar}"
+                                                th:data-cedula="${f.cedulaFallecido}"
+                                                th:data-cliente="${f.cliente.cedulaCliente}"
+                                                th:data-nombre="${f.persona.nombre}"
+                                                th:data-apellido1="${f.persona.apellido1}"
+                                                th:data-apellido2="${f.persona.apellido2}"
+                                                th:data-nacimiento="${#temporals.format(f.fechaNacimiento, 'yyyy-MM-dd')}"
+                                                th:data-fallecimiento="${#temporals.format(f.fechaFallecimiento, 'yyyy-MM-dd')}"
+                                                th:data-lugar="${f.lugarFallecimiento}"
+                                                th:data-causa="${f.causaFallecimiento}"
+                                                th:data-provincia="${dir != null ? dir.provincia.idProvincia : ''}"
+                                                th:data-canton="${dir != null ? dir.canton.idCanton : ''}"
+                                                th:data-distrito="${dir != null ? dir.distrito.idDistrito : ''}"
+                                                th:data-sennas="${dir != null ? dir.otrasSennas : ''}">
+                                            <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                                th:data-bs-id="${f.cedulaFallecido}"
+                                                th:data-bs-descripcion="${' ' + #messages.msg('fallecido.el') + ' ' + f.persona.nombreCompleto}">
+                                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center p-2" th:if="${fallecidos == null or fallecidos.empty}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{fallecido.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-regular fa-heart"></i> [[${totalFallecidos}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>

@@ -5,10 +5,10 @@ import com.Funeraria.Funeraria_G3.service.FallecidoService;
 import com.Funeraria.Funeraria_G3.service.ServicioService;
 import com.Funeraria.Funeraria_G3.service.TipoServicioService;
 import jakarta.validation.Valid;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,7 +46,11 @@ public class ServicioController {
             RedirectAttributes redirectAttributes) {
         String titulo = "todoOk";
         String mensaje = servicio.getIdServicio() == null ? "servicio.agregado" : "mensaje.actualizado";
-        if (bindingResult.hasErrors()) {
+        // Desde el formulario llegan solo los ids de los selects
+        boolean faltaFallecido = servicio.getFallecido() == null || servicio.getFallecido().getCedulaFallecido() == null
+                || servicio.getFallecido().getCedulaFallecido().isBlank();
+        boolean faltaTipo = servicio.getTipoServicio() == null || servicio.getTipoServicio().getIdTipoServicio() == null;
+        if (bindingResult.hasErrors() || faltaFallecido || faltaTipo) {
             titulo = "error"; // Falta el fallecido o el tipo de servicio
             mensaje = "servicio.error01";
         } else {
@@ -65,7 +69,7 @@ public class ServicioController {
             }
         }
         redirectAttributes.addFlashAttribute(titulo,
-                messageSource.getMessage(mensaje, null, LocaleContextHolder.getLocale()));
+                messageSource.getMessage(mensaje, null, Locale.getDefault()));
         return "redirect:/servicio/listado";
     }
 
@@ -87,7 +91,7 @@ public class ServicioController {
             log.error("" + e);
         }
         redirectAttributes.addFlashAttribute(titulo,
-                messageSource.getMessage(detalle, null, LocaleContextHolder.getLocale()));
+                messageSource.getMessage(detalle, null, Locale.getDefault()));
         return "redirect:/servicio/listado";
     }
 }

@@ -1,7 +1,10 @@
 package com.Funeraria.Funeraria_G3.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 import lombok.*;
 
 @Getter
@@ -18,17 +21,27 @@ public class Persona implements Serializable {
     private String cedula;
 
     @Column(length = 100)
+    @NotBlank
+    @Size(max = 100)
     private String nombre;
 
     @Column(name = "apellido_1", length = 100)
+    @NotBlank
+    @Size(max = 100)
     private String apellido1;
 
     @Column(name = "apellido_2", length = 100)
+    @Size(max = 100)
     private String apellido2;
 
     @ManyToOne
     @JoinColumn(name = "id_estado")
     private Estado estado;
+
+    // Relación de uno a muchos con la clase Direccion (domicilio de la persona)
+    // Sin "cascade" ni "orphanRemoval" para evitar la propagación de operaciones.
+    @OneToMany(mappedBy = "persona")
+    private List<Direccion> direcciones;
 
     // Nombre y apellidos juntos para mostrar en listados y selects
     public String getNombreCompleto() {

@@ -40,7 +40,8 @@
         <a class="nav-link disabled" href="#"><i class="fa-solid fa-table-cells-large"></i> [[#{menu.dashboard}]]</a>
         <a th:href="@{/cliente/listado}" class="nav-link"
            th:classappend="${activo == 'clientes'} ? 'activo'"><i class="fa-solid fa-user"></i> [[#{menu.clientes}]]</a>
-        <a class="nav-link disabled" href="#"><i class="fa-regular fa-heart"></i> [[#{menu.fallecidos}]]</a>
+        <a th:href="@{/fallecido/listado}" class="nav-link"
+           th:classappend="${activo == 'fallecidos'} ? 'activo'"><i class="fa-regular fa-heart"></i> [[#{menu.fallecidos}]]</a>
         <a th:href="@{/unidad/consulta}" class="nav-link"
            th:classappend="${activo == 'ubicaciones'} ? 'activo'"><i class="fa-solid fa-location-dot"></i> [[#{menu.ubicaciones}]]</a>
         <a class="nav-link disabled" href="#"><i class="fa-solid fa-money-bill"></i> [[#{menu.pagos}]]</a>

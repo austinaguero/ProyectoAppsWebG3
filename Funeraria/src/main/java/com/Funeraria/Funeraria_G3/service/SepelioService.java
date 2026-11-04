@@ -8,7 +8,7 @@ import com.Funeraria.Funeraria_G3.repository.SepelioRepository;
 import com.Funeraria.Funeraria_G3.repository.ServicioRepository;
 import com.Funeraria.Funeraria_G3.repository.UnidadSepulturaRepository;
 import com.Funeraria.Funeraria_G3.repository.UsuarioRepository;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +43,7 @@ public class SepelioService {
     // HU-06: guarda el sepelio y deja el servicio en estado «Programado»
     // HU-09: reserva la unidad de sepultura escogida
     @Transactional
-    public void programar(Sepelio sepelio) {
+    public void programar(Sepelio sepelio, LocalTime hora) {
         var servicio = servicioRepository.findById(sepelio.getServicio().getIdServicio())
                 .orElseThrow(() -> new IllegalArgumentException("El servicio funerario no existe."));
         var responsable = usuarioRepository.findById(sepelio.getResponsable().getCedulaUsuario())
@@ -57,16 +57,13 @@ public class SepelioService {
             throw new IllegalStateException("El servicio funerario no tiene un fallecido asociado.");
         }
 
-        var horaSepelio = sepelio.getFechaSepelio().atTime(sepelio.getHora());
-        validarDisponibilidad(responsable.getCedulaUsuario(), horaSepelio, null);
-        var unidad = getUnidadDisponible(sepelio.getUnidadSepultura().getIdUnidadSepultura());
-
+        var unidad = getUnidad(sepelio.getUnidadSepultura().getIdUnidadSepultura());
         Estado programado = getEstado(PROGRAMADO);
 
         sepelio.setServicio(servicio);
         sepelio.setResponsable(responsable);
         sepelio.setFallecido(servicio.getFallecido());
-        sepelio.setHoraSepelio(horaSepelio);
+        sepelio.setHoraSepelio(sepelio.getFechaSepelio().atTime(hora));
         sepelio.setEstado(programado);
         sepelio.setUnidadSepultura(unidad);
         // Se guarda de inmediato para que la base rechace una unidad ya asignada (HU-09 criterio 2)
@@ -81,19 +78,17 @@ public class SepelioService {
 
     // Edición: cambian la fecha, la hora, el responsable y la unidad; el servicio se mantiene
     @Transactional
-    public void actualizar(Sepelio sepelio) {
+    public void actualizar(Sepelio sepelio, LocalTime hora) {
         var actual = sepelioRepository.findById(sepelio.getIdSepelio())
                 .orElseThrow(() -> new IllegalArgumentException("El sepelio con ID " + sepelio.getIdSepelio() + " no existe."));
         var responsable = usuarioRepository.findById(sepelio.getResponsable().getCedulaUsuario())
                 .orElseThrow(() -> new IllegalArgumentException("El colaborador responsable no existe."));
-        var horaSepelio = sepelio.getFechaSepelio().atTime(sepelio.getHora());
-        validarDisponibilidad(responsable.getCedulaUsuario(), horaSepelio, actual.getIdSepelio());
 
-        // Si cambia la unidad: la nueva debe estar disponible y la anterior se libera
+        // Si cambia la unidad: se reserva la nueva y la anterior se libera
         var anterior = actual.getUnidadSepultura();
         var idNueva = sepelio.getUnidadSepultura().getIdUnidadSepultura();
         if (anterior == null || !anterior.getIdUnidadSepultura().equals(idNueva)) {
-            var nueva = getUnidadDisponible(idNueva);
+            var nueva = getUnidad(idNueva);
             liberar(anterior);
             actual.setUnidadSepultura(nueva);
             nueva.setEstado(getEstado(RESERVADA));
@@ -101,7 +96,7 @@ public class SepelioService {
         }
 
         actual.setFechaSepelio(sepelio.getFechaSepelio());
-        actual.setHoraSepelio(horaSepelio);
+        actual.setHoraSepelio(sepelio.getFechaSepelio().atTime(hora));
         actual.setResponsable(responsable);
         sepelioRepository.saveAndFlush(actual);
     }
@@ -123,14 +118,36 @@ public class SepelioService {
         }
     }
 
-    // HU-09 precondición: solo se puede asignar una unidad en estado «Disponible»
-    private UnidadSepultura getUnidadDisponible(Integer idUnidadSepultura) {
-        var unidad = unidadSepulturaRepository.findById(idUnidadSepultura)
-                .orElseThrow(() -> new ReglaNegocioException("sepelio.error06"));
-        if (!DISPONIBLE.equals(unidad.getEstado().getNombreEstado())) {
-            throw new ReglaNegocioException("sepelio.error06");
+    // HU-07: sepelios del mismo responsable que empiezan a menos de "duracionHoras"
+    // antes o después de este. Al editar se excluye el mismo sepelio.
+    @Transactional(readOnly = true)
+    public List<Sepelio> getConflictoHorario(Sepelio sepelio, LocalTime hora) {
+        var horaSepelio = sepelio.getFechaSepelio().atTime(hora);
+        // Un sepelio nuevo no tiene id: se usa 0 para que no excluya ninguno
+        var excluir = sepelio.getIdSepelio() != null ? sepelio.getIdSepelio() : 0;
+        return sepelioRepository.consultaSQL(sepelio.getResponsable().getCedulaUsuario(),
+                horaSepelio.minusHours(duracionHoras), horaSepelio.plusHours(duracionHoras), excluir);
+    }
+
+    // HU-09 precondición: la unidad escogida debe estar «Disponible»
+    // (al editar también sirve la unidad que el sepelio ya tiene reservada)
+    @Transactional(readOnly = true)
+    public boolean isUnidadDisponible(Sepelio sepelio) {
+        var idUnidad = sepelio.getUnidadSepultura().getIdUnidadSepultura();
+        if (sepelio.getIdSepelio() != null) {
+            var actual = sepelioRepository.findById(sepelio.getIdSepelio()).orElse(null);
+            if (actual != null && actual.getUnidadSepultura() != null
+                    && actual.getUnidadSepultura().getIdUnidadSepultura().equals(idUnidad)) {
+                return true;
+            }
         }
-        return unidad;
+        var unidad = unidadSepulturaRepository.findById(idUnidad).orElse(null);
+        return unidad != null && DISPONIBLE.equals(unidad.getEstado().getNombreEstado());
+    }
+
+    private UnidadSepultura getUnidad(Integer idUnidadSepultura) {
+        return unidadSepulturaRepository.findById(idUnidadSepultura)
+                .orElseThrow(() -> new IllegalArgumentException("La unidad de sepultura no existe."));
     }
 
     // Una unidad reservada vuelve a «Disponible»; si ya está ocupada se deja como está
@@ -139,21 +156,6 @@ public class SepelioService {
             unidad.setEstado(getEstado(DISPONIBLE));
             unidadSepulturaRepository.save(unidad);
         }
-    }
-
-    // HU-07: el responsable no puede tener otro sepelio que empiece a menos de
-    // "duracionHoras" antes o después de este. Al editar se excluye el mismo sepelio.
-    private void validarDisponibilidad(String cedulaResponsable, LocalDateTime horaSepelio, Integer idSepelio) {
-        var inicio = horaSepelio.minusHours(duracionHoras);
-        var fin = horaSepelio.plusHours(duracionHoras);
-        // Un sepelio nuevo no tiene id: se usa 0 para que no excluya ninguno
-        var excluir = idSepelio != null ? idSepelio : 0;
-        sepelioRepository
-                .findFirstByResponsableCedulaUsuarioAndHoraSepelioGreaterThanAndHoraSepelioLessThanAndIdSepelioNot(
-                        cedulaResponsable, inicio, fin, excluir)
-                .ifPresent(existente -> {
-                    throw new ConflictoHorarioException(existente);
-                });
     }
 
     private Estado getEstado(String nombre) {

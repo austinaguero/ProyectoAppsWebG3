@@ -1,16 +1,12 @@
 package com.Funeraria.Funeraria_G3.controller;
 
-import com.Funeraria.Funeraria_G3.domain.SectorDisponible;
 import com.Funeraria.Funeraria_G3.domain.UnidadSepultura;
-import com.Funeraria.Funeraria_G3.service.ReglaNegocioException;
 import com.Funeraria.Funeraria_G3.service.UnidadSepulturaService;
 import jakarta.validation.Valid;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,32 +31,24 @@ public class UnidadSepulturaController {
     public String consulta(@RequestParam(required = false) Integer idCementerio,
             @RequestParam(required = false) String sector,
             Model model) {
-        var cementerios = unidadSepulturaService.getCementerios();
-        var conDisponibles = unidadSepulturaService.getSectoresConDisponibles();
-        model.addAttribute("cementerios", cementerios);
+        model.addAttribute("cementerios", unidadSepulturaService.getCementerios());
         model.addAttribute("idCementerioActual", idCementerio);
         model.addAttribute("sectorActual", sector);
 
         if (idCementerio != null) {
-            var cementerio = cementerios.stream()
-                    .filter(c -> c.getIdCementerio().equals(idCementerio))
-                    .findFirst().orElse(null);
-            model.addAttribute("cementerioActual", cementerio);
-            model.addAttribute("sectores", unidadSepulturaService.getSectores(idCementerio));
-            // Cantidad de disponibles por sector del cementerio, para mostrarla en cada pestaña
-            Map<String, Long> disponiblesPorSector = conDisponibles.stream()
-                    .filter(s -> s.idCementerio().equals(idCementerio))
-                    .collect(Collectors.toMap(SectorDisponible::sector, SectorDisponible::cantidad));
-            model.addAttribute("disponiblesPorSector", disponiblesPorSector);
+            model.addAttribute("cementerioActual", unidadSepulturaService.getCementerio(idCementerio).orElse(null));
+            model.addAttribute("sectores", unidadSepulturaService.consultaSQLSectores(idCementerio));
+            // Sectores del cementerio con unidades disponibles, para marcarlos en las pestañas
+            model.addAttribute("sectoresDisponibles", unidadSepulturaService.consultaSQLSectoresDisponibles(idCementerio));
         }
 
         if (idCementerio != null && sector != null && !sector.isBlank()) {
-            var unidades = unidadSepulturaService.getDisponibles(idCementerio, sector);
+            var unidades = unidadSepulturaService.consultaSQL(idCementerio, sector);
             model.addAttribute("unidades", unidades);
             model.addAttribute("totalUnidades", unidades.size());
             if (unidades.isEmpty()) {
                 // HU-08 criterio 2: se sugieren otros sectores o cementerios con espacio libre
-                model.addAttribute("otrasOpciones", conDisponibles);
+                model.addAttribute("otrasOpciones", unidadSepulturaService.consultaSQLOtrasOpciones());
             }
         }
         return "unidad/consulta";
@@ -84,23 +72,29 @@ public class UnidadSepulturaController {
             RedirectAttributes redirectAttributes) {
         String titulo = "todoOk";
         String mensaje = unidadSepultura.getIdUnidadSepultura() == null ? "unidad.agregada" : "mensaje.actualizado";
-        if (bindingResult.hasErrors()) {
+        // Desde el formulario llegan solo los ids de los selects
+        boolean faltaSelect = unidadSepultura.getCementerio() == null || unidadSepultura.getCementerio().getIdCementerio() == null
+                || unidadSepultura.getTipoUnidad() == null || unidadSepultura.getTipoUnidad().getIdTipoUnidad() == null
+                || unidadSepultura.getEstado() == null || unidadSepultura.getEstado().getIdEstado() == null;
+        if (bindingResult.hasErrors() || faltaSelect) {
             titulo = "error"; // Falta algún dato o el número/capacidad no es válido
             mensaje = "unidad.error01";
         } else {
             try {
                 unidadSepulturaService.save(unidadSepultura);
-            } catch (ReglaNegocioException e) {
-                titulo = "error";
-                mensaje = e.getClave();
-            } catch (DataIntegrityViolationException e) {
-                titulo = "error";
+            } catch (IllegalArgumentException e) {
+                titulo = "error"; // El estado no es válido o la unidad a modificar no existe
                 mensaje = "unidad.error01";
-                log.error("" + e);
+            } catch (IllegalStateException e) {
+                titulo = "error"; // Tiene un sepelio asignado y se intentó dejar «Disponible»
+                mensaje = "unidad.error04";
+            } catch (DataIntegrityViolationException e) {
+                titulo = "error"; // Ya existe una unidad en esa ubicación (UNIQUE de la base)
+                mensaje = "unidad.error02";
             }
         }
         redirectAttributes.addFlashAttribute(titulo,
-                messageSource.getMessage(mensaje, null, LocaleContextHolder.getLocale()));
+                messageSource.getMessage(mensaje, null, Locale.getDefault()));
         return "redirect:/unidad/listado";
     }
 
@@ -110,16 +104,19 @@ public class UnidadSepulturaController {
         String detalle = "mensaje.eliminado";
         try {
             unidadSepulturaService.delete(idUnidadSepultura);
-        } catch (ReglaNegocioException e) {
-            titulo = "error";
-            detalle = e.getClave();
+        } catch (IllegalArgumentException e) {
+            titulo = "error"; // Captura la excepción de argumento inválido para el mensaje de "no existe"
+            detalle = "unidad.error03";
+        } catch (IllegalStateException e) {
+            titulo = "error"; // Captura la excepción de estado ilegal para el mensaje de "datos asociados"
+            detalle = "unidad.error05";
         } catch (Exception e) {
             titulo = "error";  // Captura cualquier otra excepción inesperada
             detalle = "unidad.error05";
             log.error("" + e);
         }
         redirectAttributes.addFlashAttribute(titulo,
-                messageSource.getMessage(detalle, null, LocaleContextHolder.getLocale()));
+                messageSource.getMessage(detalle, null, Locale.getDefault()));
         return "redirect:/unidad/listado";
     }
 }
