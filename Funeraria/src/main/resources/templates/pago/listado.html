@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{general/fragmentos :: head}"></head>
+    <body>
+        <div class="panel">
+            <aside th:replace="~{general/fragmentos :: menu('pagos')}"></aside>
+            <main class="contenido">
+                <section th:replace="~{pago/fragmentos :: formulario}"></section>
+                <section th:replace="~{pago/fragmentos :: busqueda}"></section>
+                <section th:replace="~{pago/fragmentos :: listado}"></section>
+            </main>
+        </div>
+
+        <section th:replace="~{general/fragmentos :: mostrarToast}"></section>
+        <footer th:replace="~{general/fragmentos :: footer}"></footer>
+
+        <script th:src="@{/js/modulos/pago.js}"></script>
+    </body>
+</html>

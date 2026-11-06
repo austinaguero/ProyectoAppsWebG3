@@ -1,0 +1,242 @@
+<!-- 1 Fragmento con el título y el formulario (modal) para registrar el pago de una o varias cuotas (HU-12) -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{pago.titulo}]]</h1>
+    </div>
+    <div class="modal fade" id="pagoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="pagoForm"
+                      method="post"
+                      th:action="@{/pago/guardar}">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="pagoModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="pagoCuota" name="cuota.idCuota"/>
+                        <div class="mb-3">
+                            <label for="pagoCliente">[[#{financiamiento.cliente}]]</label>
+                            <input type="text" id="pagoCliente" class="form-control" readonly/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pagoConcepto">[[#{pago.conceptoTitulo}]]</label>
+                            <input type="text" id="pagoConcepto" class="form-control" readonly/>
+                        </div>
+                        <!-- HU-12: se pueden pagar varias cuotas seguidas; las opciones las llena pago.js -->
+                        <div class="mb-3">
+                            <label for="pagoCantidad">[[#{pago.cantidad}]]</label>
+                            <select id="pagoCantidad" name="cantidad" class="form-select"></select>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label for="pagoCuotaMonto">[[#{pago.montoCuota}]]</label>
+                                <input type="text" id="pagoCuotaMonto" class="form-control" readonly/>
+                            </div>
+                            <!-- HU-12: recargo por mora si la cuota ya venció -->
+                            <div class="col-6 mb-3">
+                                <label for="pagoRecargo">[[#{pago.recargo}]]</label>
+                                <input type="text" id="pagoRecargo" class="form-control" readonly/>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pagoMonto">[[#{pago.montoTotal}]]</label>
+                            <input type="number" id="pagoMonto" name="montoPagado" min="0.01" step="0.01"
+                                   class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pagoMetodo">[[#{pago.metodo}]]</label>
+                            <select id="pagoMetodo" name="metodoPago.idMetodoPago" class="form-select" required>
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="m : ${metodosPago}" th:value="${m.idMetodoPago}">
+                                    [[${m.nombreMetodoPago}]]
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{pago.registrar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2 Fragmento con el buscador por contrato o cliente y el filtro por situación (HU-11) -->
+<section th:fragment="busqueda">
+    <!-- Igual que la consulta SQL de Tienda (POST a /consultaSQL) -->
+    <form method="post" th:action="@{/pago/consultaSQL}" class="row g-2 mb-3">
+        <div class="col-md-5">
+            <input type="text" name="buscar" class="form-control"
+                   th:value="${buscar}" th:placeholder="#{pago.buscarTexto}"/>
+        </div>
+        <div class="col-md-3">
+            <select name="situacion" class="form-select">
+                <option value="" th:selected="${situacion == null or situacion == ''}">[[#{pago.todas}]]</option>
+                <option value="alDia" th:selected="${situacion == 'alDia'}">[[#{pago.alDia}]]</option>
+                <option value="mora" th:selected="${situacion == 'mora'}">[[#{pago.mora}]]</option>
+                <option value="pagado" th:selected="${situacion == 'pagado'}">[[#{pago.pagado}]]</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-funeraria">
+                <i class="fa-solid fa-magnifying-glass"></i> [[#{cliente.buscar}]]
+            </button>
+            <a th:href="@{/pago/listado}" class="btn btn-secondary">
+                <i class="fa-solid fa-eraser"></i> [[#{cliente.limpiar}]]
+            </a>
+        </div>
+    </form>
+</section>
+
+<!-- 3 Fragmento con el estado de cuenta por contrato (HU-11): una fila por contrato con su avance,
+     la próxima cuota a pagar (HU-12) y el detalle de sus cuotas que se despliega con «Ver cuotas» -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{pago.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${financiamientos != null and !financiamientos.empty}">
+                        <table class="table tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>[[#{financiamiento.cliente}]]</th>
+                                    <th>[[#{financiamiento.numero}]]</th>
+                                    <th>[[#{financiamiento.cuotas}]]</th>
+                                    <th>[[#{pago.proxima}]]</th>
+                                    <th>[[#{financiamiento.saldo}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <!-- Un tbody por contrato: la fila del resumen y la fila con el detalle de cuotas -->
+                            <tbody th:each="f : ${financiamientos}"
+                                   th:with="pendientes=${f.cuotas.?[estado.nombreEstado != 'Pagada']},
+                                            pagadas=${#lists.size(f.cuotas) - #lists.size(pendientes)},
+                                            enMora=${!pendientes.?[fechaVencimiento.isBefore(#root.hoy)].isEmpty()},
+                                            proxNum=${pendientes.isEmpty() ? 0 : #lists.sort(pendientes.![numeroCuota])[0]},
+                                            prox=${pendientes.^[numeroCuota == #root.proxNum]},
+                                            proxVencida=${prox != null and prox.fechaVencimiento.isBefore(hoy)},
+                                            recargo=${prox != null ? prox.monto * tasaRecargo : 0}">
+                                <tr>
+                                    <td>[[${f.cliente.persona.nombreCompleto}]]<br/>
+                                        <small class="text-muted">[[${f.cliente.cedulaCliente}]]</small></td>
+                                    <td>[[${f.idFinanciamiento}]]<br/>
+                                        <small class="text-muted">[[${f.plan.nombrePlan}]]</small></td>
+                                    <!-- Avance: cuotas pagadas de las cuotas del contrato -->
+                                    <td class="text-nowrap">[[${pagadas}]] / [[${f.cantidadCuotas}]]
+                                        <div class="progress avance mt-1">
+                                            <div class="progress-bar"
+                                                 th:style="${'width: ' + (pagadas * 100 / f.cantidadCuotas) + '%'}"></div>
+                                        </div>
+                                    </td>
+                                    <!-- HU-12: la próxima cuota es la primera sin pagar -->
+                                    <td>
+                                        <th:block th:if="${prox != null}">
+                                            [[#{pago.cuota(${prox.numeroCuota})}]] · ₡[[${#numbers.formatDecimal(prox.monto, 1, 'COMMA', 2, 'POINT')}]]
+                                            <small class="d-block text-muted">[[#{pago.vence}]] [[${#temporals.format(prox.fechaVencimiento, 'dd/MM/yyyy')}]]</small>
+                                            <small th:if="${proxVencida}" class="d-block text-muted">
+                                                + ₡[[${#numbers.formatDecimal(recargo, 1, 'COMMA', 2, 'POINT')}]] [[#{pago.recargo}]]</small>
+                                        </th:block>
+                                        <span th:if="${prox == null}" class="text-muted">[[#{pago.sinPendientes}]]</span>
+                                    </td>
+                                    <td class="text-nowrap">₡[[${#numbers.formatDecimal(f.saldoPendiente, 1, 'COMMA', 2, 'POINT')}]]</td>
+                                    <td>
+                                        <span th:if="${prox == null}" class="badge estado pagado">[[#{pago.pagado}]]</span>
+                                        <span th:if="${prox != null and enMora}" class="badge estado mora">[[#{pago.mora}]]</span>
+                                        <span th:if="${prox != null and !enMora}" class="badge estado">[[#{pago.alDia}]]</span>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <button type="button" th:if="${prox != null}"
+                                                class="btn btn-sm btn-funeraria"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#pagoModal"
+                                                data-modo="agregar"
+                                                th:data-titulo="#{pago.registrar}"
+                                                th:data-cuota="${prox.idCuota}"
+                                                th:data-cliente="${f.cliente.persona.nombreCompleto + ' (' + f.cliente.cedulaCliente + ')'}"
+                                                th:data-financiamiento="${f.idFinanciamiento}"
+                                                th:data-concepto="#{pago.concepto(${f.idFinanciamiento},${prox.numeroCuota},${f.cantidadCuotas},${f.plan.nombrePlan})}"
+                                                th:data-concepto-varias="#{pago.conceptoVarias(${f.idFinanciamiento},'{desde}','{hasta}',${f.cantidadCuotas},${f.plan.nombrePlan})}">
+                                            <i class="fa-solid fa-money-bill"></i> [[#{pago.registrar}]]
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-secondary"
+                                                data-bs-toggle="collapse"
+                                                th:data-bs-target="${'#cuotas' + f.idFinanciamiento}">
+                                            <i class="fa-solid fa-list"></i> [[#{financiamiento.verCuotas}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Detalle de cuotas del contrato, oculto hasta que se pulse «Ver cuotas» -->
+                                <tr class="collapse detalle-cuotas" th:id="${'cuotas' + f.idFinanciamiento}">
+                                    <td colspan="7">
+                                        <table class="table table-sm mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>[[#{pago.cuotaTitulo}]]</th>
+                                                    <th>[[#{pago.monto}]]</th>
+                                                    <th>[[#{pago.vence}]]</th>
+                                                    <th>[[#{sepelio.estado}]]</th>
+                                                    <th>[[#{pago.recibo}]]</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Las cuotas se recorren por número para mostrarlas en orden -->
+                                                <tr th:each="n : ${#numbers.sequence(1, #lists.size(f.cuotas))}"
+                                                    th:with="c=${f.cuotas.^[numeroCuota == #root.n]},
+                                                             pagada=${c.estado.nombreEstado == 'Pagada'},
+                                                             vencida=${!pagada and c.fechaVencimiento.isBefore(hoy)}"
+                                                    th:attr="data-pendiente=${!pagada},
+                                                             data-numero=${c.numeroCuota},
+                                                             data-monto=${c.monto},
+                                                             data-recargo=${vencida ? #numbers.formatDecimal(c.monto * tasaRecargo, 1, 'NONE', 2, 'POINT') : '0.00'}">
+                                                    <td>[[${c.numeroCuota}]]</td>
+                                                    <td class="text-nowrap">₡[[${#numbers.formatDecimal(c.monto, 1, 'COMMA', 2, 'POINT')}]]</td>
+                                                    <td>[[${#temporals.format(c.fechaVencimiento, 'dd/MM/yyyy')}]]</td>
+                                                    <td>
+                                                        <span th:if="${pagada}" class="badge estado pagado">[[#{pago.pagado}]]</span>
+                                                        <span th:if="${vencida}" class="badge estado mora">[[#{pago.mora}]]</span>
+                                                        <span th:if="${!pagada and !vencida}" class="badge estado">[[#{pago.alDia}]]</span>
+                                                    </td>
+                                                    <!-- HU-12: recibo del pago -->
+                                                    <td>
+                                                        <small th:each="p : ${c.pagos}" class="d-block">
+                                                            <i class="fa-solid fa-receipt"></i> [[${p.numComprobante}]]
+                                                            · [[${#temporals.format(p.fechaPago, 'dd/MM/yyyy')}]]
+                                                            · [[${p.metodoPago.nombreMetodoPago}]]
+                                                            <span th:if="${p.recargo != null and p.recargo.signum() > 0}">
+                                                                · [[#{pago.recargo}]] ₡[[${#numbers.formatDecimal(p.recargo, 1, 'COMMA', 2, 'POINT')}]]</span>
+                                                        </small>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center p-2"
+                         th:if="${(financiamientos == null or financiamientos.empty) and ((buscar != null and !buscar.isBlank()) or (situacion != null and !situacion.isBlank()))}">
+                        <span>[[#{cliente.sinResultados}]]</span></div>
+                    <div class="text-center p-2"
+                         th:if="${(financiamientos == null or financiamientos.empty) and (buscar == null or buscar.isBlank()) and (situacion == null or situacion.isBlank())}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{financiamiento.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-file-invoice"></i> [[${totalFinanciamientos}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>

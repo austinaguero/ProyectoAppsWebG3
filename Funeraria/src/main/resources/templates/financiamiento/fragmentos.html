@@ -1,0 +1,162 @@
+<!-- 1 Fragmento con el título y el formulario (modal) para registrar el contrato de un plan de previsión (HU-10) -->
+<section th:fragment="formulario">
+    <div class="titulo-pagina">
+        <h1>[[#{financiamiento.titulo}]]</h1>
+    </div>
+    <div class="py-3">
+        <button type="button"
+                class="btn btn-funeraria"
+                data-bs-toggle="modal"
+                data-bs-target="#financiamientoModal"
+                data-modo="agregar"
+                th:data-titulo="#{financiamiento.agregar}">
+            <i class="fa-solid fa-plus"></i>
+            [[#{financiamiento.agregar}]]
+        </button>
+    </div>
+    <div class="modal fade" id="financiamientoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="financiamientoForm"
+                      method="post"
+                      th:action="@{/financiamiento/guardar}">
+                    <div class="modal-header encabezado-modal">
+                        <h5 class="modal-title" id="financiamientoModalTitulo"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="financiamientoCliente">[[#{financiamiento.cliente}]]</label>
+                            <select id="financiamientoCliente" name="cliente.cedulaCliente" class="form-select" required>
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <option th:each="c : ${clientes}" th:value="${c.cedulaCliente}">
+                                    [[${c.persona.nombreCompleto}]] ([[${c.cedulaCliente}]])
+                                </option>
+                            </select>
+                            <small class="text-muted" th:if="${clientes == null or clientes.empty}">[[#{financiamiento.sinClientes}]]</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="financiamientoPlan">[[#{financiamiento.plan}]]</label>
+                            <select id="financiamientoPlan" name="plan.idPlan" class="form-select" required>
+                                <option value="">[[#{sepelio.seleccione}]]</option>
+                                <!-- Cada plan muestra los servicios funerarios que cubre -->
+                                <option th:each="p : ${planes}" th:value="${p.idPlan}">
+                                    [[${p.nombrePlan}]] ([[${#strings.listJoin(p.servicios.![tipoServicio.nombreTipo], ', ')}]])
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="financiamientoCuotas">[[#{financiamiento.cantidadCuotas}]]</label>
+                            <input type="number" id="financiamientoCuotas" name="cantidadCuotas" min="1" max="60"
+                                   class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="financiamientoVencimiento">[[#{financiamiento.primerVencimiento}]]</label>
+                            <input type="date" id="financiamientoVencimiento" name="primerVencimiento" class="form-control" required
+                                   th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"/>
+                        </div>
+                        <small class="text-muted">[[#{financiamiento.ayuda}]]</small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i> [[#{accion.cerrar}]]
+                        </button>
+                        <button type="submit" class="btn btn-funeraria">
+                            <i class="fa-solid fa-floppy-disk"></i> [[#{accion.guardar}]]
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2 Fragmento con el buscador por número de contrato, cédula o nombre del cliente -->
+<section th:fragment="busqueda">
+    <!-- Igual que la consulta SQL de Tienda (POST a /consultaSQL) -->
+    <form method="post" th:action="@{/financiamiento/consultaSQL}" class="row g-2 mb-3">
+        <div class="col-md-6">
+            <input type="text" name="buscar" class="form-control" required
+                   th:value="${buscar}" th:placeholder="#{financiamiento.buscarTexto}"/>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-funeraria">
+                <i class="fa-solid fa-magnifying-glass"></i> [[#{cliente.buscar}]]
+            </button>
+            <a th:href="@{/financiamiento/listado}" class="btn btn-secondary">
+                <i class="fa-solid fa-eraser"></i> [[#{cliente.limpiar}]]
+            </a>
+        </div>
+    </form>
+</section>
+
+<!-- 3 Fragmento con el listado de contratos -->
+<section th:fragment="listado">
+    <div class="row">
+        <div class="col-xl-9 mb-3">
+            <div class="card">
+                <div class="card-header"><h4 class="mb-0">[[#{financiamiento.listado}]]</h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:if="${financiamientos != null and !financiamientos.empty}">
+                        <table class="table table-hover tabla-funeraria align-middle">
+                            <thead>
+                                <tr>
+                                    <th>[[#{financiamiento.numero}]]</th>
+                                    <th>[[#{financiamiento.cliente}]]</th>
+                                    <th>[[#{financiamiento.plan}]]</th>
+                                    <th>[[#{financiamiento.montoTotal}]]</th>
+                                    <th>[[#{financiamiento.cuotas}]]</th>
+                                    <th>[[#{financiamiento.saldo}]]</th>
+                                    <th>[[#{financiamiento.fechaInicio}]]</th>
+                                    <th>[[#{sepelio.estado}]]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="f : ${financiamientos}">
+                                    <td>[[${f.idFinanciamiento}]]</td>
+                                    <td>[[${f.cliente.persona.nombreCompleto}]]<br/>
+                                        <small class="text-muted">[[${f.cliente.cedulaCliente}]]</small></td>
+                                    <td>[[${f.plan.nombrePlan}]]</td>
+                                    <td class="text-nowrap">₡[[${#numbers.formatDecimal(f.montoTotal, 1, 'COMMA', 2, 'POINT')}]]</td>
+                                    <!-- Cuotas pagadas de las cuotas del plan de pagos -->
+                                    <td>[[${#lists.size(f.cuotas.?[estado.nombreEstado == 'Pagada'])}]] / [[${f.cantidadCuotas}]]</td>
+                                    <td class="text-nowrap">₡[[${#numbers.formatDecimal(f.saldoPendiente, 1, 'COMMA', 2, 'POINT')}]]</td>
+                                    <td>[[${#temporals.format(f.fechaInicio, 'dd/MM/yyyy')}]]</td>
+                                    <td><span class="badge estado">[[${f.estado.nombreEstado}]]</span></td>
+                                    <td class="text-nowrap">
+                                        <!-- HU-11: abre el estado de cuenta del contrato en Pagos -->
+                                        <form method="post" th:action="@{/pago/consultaSQL}" class="d-inline">
+                                            <input type="hidden" name="buscar" th:value="${f.idFinanciamiento}"/>
+                                            <button type="submit" class="btn btn-sm btn-funeraria">
+                                                <i class="fa-solid fa-money-bill"></i> [[#{financiamiento.verCuotas}]]
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="modal" data-bs-target="#confirmModal"
+                                                th:data-bs-id="${f.idFinanciamiento}"
+                                                th:data-bs-descripcion="${' ' + f.idFinanciamiento + ' - ' + f.plan.nombrePlan + ' (' + f.cliente.persona.nombreCompleto + ')'}">
+                                            <i class="fa-solid fa-trash"></i> [[#{accion.eliminar}]]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center p-2"
+                         th:if="${(financiamientos == null or financiamientos.empty) and buscar != null and !buscar.isBlank()}">
+                        <span>[[#{cliente.sinResultados}]]</span></div>
+                    <div class="text-center p-2"
+                         th:if="${(financiamientos == null or financiamientos.empty) and (buscar == null or buscar.isBlank())}">
+                        <span>[[#{lista.vacia}]]</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <div class="card text-center tarjeta-total mb-3">
+                <div class="card-body"><h3>[[#{financiamiento.total}]]</h3>
+                    <h4 class="fs-2"><i class="fa-solid fa-file-invoice"></i> [[${totalFinanciamientos}]]</h4>
+                </div></div>
+        </div>
+    </div>
+</section>
