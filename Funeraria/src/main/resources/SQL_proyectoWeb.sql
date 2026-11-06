@@ -26,6 +26,14 @@
          con los códigos oficiales como llave.
    - 2026-11-03 Se aplicó en Aiven la FK fide_clientes_cedula_cliente_fk (clientes -> personas),
      que ya estaba en este script pero faltaba en la base creada en Aiven.
+   - 2026-11-05 HU-10, HU-11 y HU-12 (planes de previsión, cuotas y pagos):
+       * AUTO_INCREMENT en fide_financiamientos_tb, fide_cuotas_tb y fide_pagos_tb.
+       * Estados 7 «Pendiente» y 8 «Pagada» para las cuotas.
+       * Métodos de pago y 3 planes de previsión con sus servicios cubiertos y costos.
+   - 2026-11-05 HU-12 Recargos por mora:
+       * fide_pagos_tb.recargo: recargo cobrado al pagar una cuota vencida
+         (monto_pagado = monto de la cuota + recargo). El porcentaje se configura en
+         application.properties (pago.recargo.porcentaje).
    - 2026-10-23 Catálogos y datos de prueba (estados, roles, tipos, personas,
      usuarios, cliente, fallecidos, servicios, cementerios y unidades).
    ===================================================================== */
@@ -215,7 +223,8 @@ CREATE TABLE IF NOT EXISTS fide_servicios_tb (
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS fide_financiamientos_tb (
-    id_financiamiento INT NOT NULL,
+    -- Cambio HU-10: AUTO_INCREMENT, el número de contrato lo genera la base
+    id_financiamiento INT NOT NULL AUTO_INCREMENT,
     id_plan INT NOT NULL,
     cedula_cliente VARCHAR(20) NOT NULL,
     monto_total DECIMAL(10, 2),
@@ -230,7 +239,8 @@ CREATE TABLE IF NOT EXISTS fide_financiamientos_tb (
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS fide_cuotas_tb (
-    id_cuota INT NOT NULL,
+    -- Cambio HU-10: AUTO_INCREMENT, las cuotas se generan al registrar el plan
+    id_cuota INT NOT NULL AUTO_INCREMENT,
     id_financiamiento INT NOT NULL,
     numero_cuota INT,
     monto DECIMAL(10, 2),
@@ -242,11 +252,14 @@ CREATE TABLE IF NOT EXISTS fide_cuotas_tb (
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS fide_pagos_tb (
-    id_pago INT NOT NULL,
+    -- Cambio HU-12: AUTO_INCREMENT, cada pago registrado es un recibo nuevo
+    id_pago INT NOT NULL AUTO_INCREMENT,
     id_cuota INT NOT NULL,
     id_metodo_pago INT NOT NULL,
     fecha_pago DATE NOT NULL DEFAULT (CURRENT_DATE),
     monto_pagado DECIMAL(10, 2),
+    -- Cambio HU-12: recargo por mora incluido en monto_pagado (0 si la cuota se pagó a tiempo)
+    recargo DECIMAL(10, 2) NOT NULL DEFAULT 0,
     num_comprobante VARCHAR(50),
     id_estado INT NOT NULL,
     CONSTRAINT fide_pagos_id_pago_pk PRIMARY KEY (id_pago),
@@ -426,7 +439,9 @@ INSERT IGNORE INTO fide_estado_tb (id_estado, nombre_estado) VALUES
     (3, 'Programado'),
     (4, 'Disponible'),
     (5, 'Reservada'),
-    (6, 'Ocupada');
+    (6, 'Ocupada'),
+    (7, 'Pendiente'),   -- cuota sin pagar (HU-11 / HU-12)
+    (8, 'Pagada');      -- cuota pagada (HU-12)
 
 INSERT IGNORE INTO fide_roles_tb (id_rol, nombre_rol, descripcion, id_estado) VALUES
     (1, 'Administrador', 'Acceso total al sistema', 1),
@@ -443,6 +458,38 @@ INSERT IGNORE INTO fide_tipos_unidad_tb (id_tipo_unidad, nombre_tipo_unidad, id_
     (1, 'Nicho', 1),
     (2, 'Bóveda', 1),
     (3, 'Mausoleo', 1);
+
+-- HU-12: métodos de pago
+INSERT IGNORE INTO fide_tipo_metodo_pago_tb (id_metodo_pago, nombre_metodo_pago, id_estado) VALUES
+    (1, 'Efectivo', 1),
+    (2, 'Tarjeta', 1),
+    (3, 'Transferencia', 1),
+    (4, 'SINPE Móvil', 1);
+
+-- HU-10: planes de previsión, sus servicios cubiertos y el costo de cada servicio.
+-- El precio del plan es la suma de los costos de sus servicios.
+INSERT IGNORE INTO fide_planes_prevision_tb (id_plan, nombre_plan, id_plan_servicio, vigencia_inicio, vigencia_fin, id_estado) VALUES
+    (1, 'Plan Básico', NULL, '2026-01-01', '2030-12-31', 1),
+    (2, 'Plan Familiar', NULL, '2026-01-01', '2030-12-31', 1),
+    (3, 'Plan Cremación', NULL, '2026-01-01', '2030-12-31', 1);
+
+INSERT IGNORE INTO fide_planes_servicios_tb (id_plan_servicio, id_plan, id_tipo_servicio, id_estado) VALUES
+    (1, 1, 1, 1),   -- Básico: Velación
+    (2, 1, 2, 1),   -- Básico: Sepelio
+    (3, 2, 1, 1),   -- Familiar: Velación
+    (4, 2, 2, 1),   -- Familiar: Sepelio
+    (5, 2, 3, 1),   -- Familiar: Cremación
+    (6, 3, 1, 1),   -- Cremación: Velación
+    (7, 3, 3, 1);   -- Cremación: Cremación
+
+INSERT IGNORE INTO fide_planes_costos_tb (id_plan_costo, id_plan_servicio, costo, id_estado) VALUES
+    (1, 1, 450000.00, 1),
+    (2, 2, 850000.00, 1),
+    (3, 3, 500000.00, 1),
+    (4, 4, 900000.00, 1),
+    (5, 5, 600000.00, 1),
+    (6, 6, 400000.00, 1),
+    (7, 7, 650000.00, 1);
 
 -- División territorial de Costa Rica (códigos oficiales: provincia N, cantón NCC, distrito NCCDD).
 -- Revisar contra la lista oficial del INEC si se detecta algún nombre distinto.

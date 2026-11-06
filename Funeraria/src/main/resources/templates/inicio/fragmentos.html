@@ -16,7 +16,73 @@
 </section>
 
 <!-- Fragmento #2 botón de acceso para los usuarios -->
-<!-- Temporal: mientras no exista el login, lleva directo al listado de sepelios -->
+<!-- Temporal: mientras no exista el login, lleva a la página principal -->
 <section th:fragment="ingreso" class="text-center pb-4">
-    <a th:href="@{/sepelio/listado}" class="btn-ingreso">[[#{inicio.ingreso}]]</a>
+    <a th:href="@{/principal}" class="btn-ingreso">[[#{inicio.ingreso}]]</a>
+</section>
+
+<!-- Fragmento #3 accesos de la página principal: una tarjeta por cada módulo del sistema -->
+<section th:fragment="accesos">
+    <div class="titulo-pagina">
+        <h1>[[#{principal.titulo}]]</h1>
+    </div>
+    <p class="py-3 mb-0">[[#{principal.bienvenida}]]</p>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/cliente/listado}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-solid fa-user"></i> [[#{menu.clientes}]]</h4>
+                    <p class="mb-0">[[#{principal.clientes}]]</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/fallecido/listado}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-regular fa-heart"></i> [[#{menu.fallecidos}]]</h4>
+                    <p class="mb-0">[[#{principal.fallecidos}]]</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/unidad/consulta}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-solid fa-location-dot"></i> [[#{menu.ubicaciones}]]</h4>
+                    <p class="mb-0">[[#{principal.ubicaciones}]]</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/servicio/listado}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-solid fa-hand-holding-heart"></i> [[#{menu.servicios}]]</h4>
+                    <p class="mb-0">[[#{principal.servicios}]]</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/sepelio/listado}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-solid fa-calendar-days"></i> [[#{menu.sepelios}]]</h4>
+                    <p class="mb-0">[[#{principal.sepelios}]]</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/financiamiento/listado}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-solid fa-file-invoice"></i> [[#{menu.ventas}]]</h4>
+                    <p class="mb-0">[[#{principal.ventas}]]</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <a th:href="@{/pago/listado}" class="card acceso h-100">
+                <div class="card-body">
+                    <h4><i class="fa-solid fa-money-bill"></i> [[#{menu.pagos}]]</h4>
+                    <p class="mb-0">[[#{principal.pagos}]]</p>
+                </div>
+            </a>
+        </div>
+    </div>
 </section>

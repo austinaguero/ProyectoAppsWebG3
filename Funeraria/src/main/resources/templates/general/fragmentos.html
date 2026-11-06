@@ -37,16 +37,19 @@
 <aside th:fragment="menu(activo)" class="menu-lateral d-print-none">
     <a th:href="@{/}" class="menu-titulo">[[#{aplicacion.titulo}]]</a>
     <nav class="nav flex-column">
-        <a class="nav-link disabled" href="#"><i class="fa-solid fa-table-cells-large"></i> [[#{menu.dashboard}]]</a>
+        <a th:href="@{/principal}" class="nav-link"
+           th:classappend="${activo == 'dashboard'} ? 'activo'"><i class="fa-solid fa-table-cells-large"></i> [[#{menu.dashboard}]]</a>
         <a th:href="@{/cliente/listado}" class="nav-link"
            th:classappend="${activo == 'clientes'} ? 'activo'"><i class="fa-solid fa-user"></i> [[#{menu.clientes}]]</a>
         <a th:href="@{/fallecido/listado}" class="nav-link"
            th:classappend="${activo == 'fallecidos'} ? 'activo'"><i class="fa-regular fa-heart"></i> [[#{menu.fallecidos}]]</a>
         <a th:href="@{/unidad/consulta}" class="nav-link"
            th:classappend="${activo == 'ubicaciones'} ? 'activo'"><i class="fa-solid fa-location-dot"></i> [[#{menu.ubicaciones}]]</a>
-        <a class="nav-link disabled" href="#"><i class="fa-solid fa-money-bill"></i> [[#{menu.pagos}]]</a>
+        <a th:href="@{/pago/listado}" class="nav-link"
+           th:classappend="${activo == 'pagos'} ? 'activo'"><i class="fa-solid fa-money-bill"></i> [[#{menu.pagos}]]</a>
         <a class="nav-link disabled" href="#"><i class="fa-solid fa-chart-line"></i> [[#{menu.reportes}]]</a>
-        <a class="nav-link disabled" href="#"><i class="fa-solid fa-file-invoice"></i> [[#{menu.ventas}]]</a>
+        <a th:href="@{/financiamiento/listado}" class="nav-link"
+           th:classappend="${activo == 'ventas'} ? 'activo'"><i class="fa-solid fa-file-invoice"></i> [[#{menu.ventas}]]</a>
         <a th:href="@{/servicio/listado}" class="nav-link"
            th:classappend="${activo == 'servicios'} ? 'activo'"><i class="fa-solid fa-hand-holding-heart"></i> [[#{menu.servicios}]]</a>
         <a th:href="@{/sepelio/listado}" class="nav-link"

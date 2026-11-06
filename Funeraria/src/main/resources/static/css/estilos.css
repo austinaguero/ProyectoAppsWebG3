@@ -225,6 +225,51 @@ body {
     font-weight: 500;
 }
 
+/* Página principal: tarjetas de acceso a cada módulo */
+.card.acceso {
+    color: var(--gris);
+    text-decoration: none;
+    border-top: 4px solid var(--salvia);
+}
+
+.card.acceso h4 {
+    color: var(--verde-oscuro);
+}
+
+.card.acceso:hover {
+    background-color: var(--marmol);
+    border-top-color: var(--dorado);
+}
+
+/* HU-11: situación de la cuota */
+.badge.estado.mora {
+    background-color: var(--dorado);
+    color: #ffffff;
+}
+
+.badge.estado.pagado {
+    background-color: var(--arena);
+}
+
+/* HU-11: avance de pago del contrato y detalle de sus cuotas */
+.progress.avance {
+    height: 6px;
+    min-width: 80px;
+}
+
+.progress.avance .progress-bar {
+    background-color: var(--salvia);
+}
+
+.detalle-cuotas > td {
+    background-color: var(--marmol);
+    padding: 0.5rem 1rem 1rem 2rem;
+}
+
+.detalle-cuotas table {
+    background-color: transparent;
+}
+
 .tarjeta-total {
     background-color: var(--salvia);
     color: #ffffff;

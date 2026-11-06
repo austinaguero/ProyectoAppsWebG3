@@ -127,6 +127,13 @@
                                                 th:data-referencia="${c.referenciaFamiliar}">
                                             <i class="fas fa-pencil-alt"></i> [[#{accion.actualizar}]]
                                         </button>
+                                        <!-- HU-10 criterio 2: los planes y cuotas quedan en el expediente del cliente -->
+                                        <form method="post" th:action="@{/pago/consultaSQL}" class="d-inline">
+                                            <input type="hidden" name="buscar" th:value="${c.cedulaCliente}"/>
+                                            <button type="submit" class="btn btn-sm btn-funeraria">
+                                                <i class="fa-solid fa-money-bill"></i> [[#{cliente.verPagos}]]
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             </tbody>

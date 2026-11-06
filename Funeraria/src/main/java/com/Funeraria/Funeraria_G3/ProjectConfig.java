@@ -20,6 +20,8 @@ public class ProjectConfig implements WebMvcConfigurer {
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/").setViewName("index");
+        // Página principal después del ingreso (temporal mientras se trabaja el dashboard)
+        registry.addViewController("/principal").setViewName("inicio/principal");
     }
 
     @Bean
